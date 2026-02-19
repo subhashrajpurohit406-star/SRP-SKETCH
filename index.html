@@ -2,21 +2,16 @@
 <html>
 <head>
 <title>SRP Sketch</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-body{
-margin:0;
-font-family:Arial;
-background:#f2f2f2;
-}
+body{margin:0;font-family:Arial;background:#f2f2f2;}
 
-/* NAVBAR */
 .nav{
 background:#131921;
 color:white;
 padding:10px;
 display:flex;
-align-items:center;
 gap:10px;
 }
 
@@ -25,10 +20,9 @@ flex:1;
 padding:8px;
 }
 
-/* PRODUCTS */
 .products{
 display:grid;
-grid-template-columns:repeat(2,1fr);
+grid-template-columns:1fr 1fr;
 gap:10px;
 padding:10px;
 }
@@ -42,7 +36,7 @@ border-radius:10px;
 button{
 background:#ff9900;
 border:none;
-padding:8px;
+padding:10px;
 width:100%;
 }
 </style>
@@ -52,9 +46,24 @@ width:100%;
 
 <div class="nav">
 <b>SRP Sketch</b>
-<input placeholder="Search products">
+<input placeholder="Search">
 </div>
 
 <div class="products">
 
-<div class
+<div class="card">
+<h3>Sketch Pencil Set</h3>
+<p>₹299</p>
+<button>Add to Cart</button>
+</div>
+
+<div class="card">
+<h3>Drawing Book</h3>
+<p>₹199</p>
+<button>Add to Cart</button>
+</div>
+
+</div>
+
+</body>
+</html>
