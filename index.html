@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRP SKETCH | Pro Marketplace</title>
+    <title>SRP SKETCH | Amazon Style</title>
     <style>
         :root { --amz-orange: #febd69; --amz-dark: #232f3e; --bg: #131921; --card: #ffffff; --text: #111; }
         body { margin: 0; font-family: Arial, sans-serif; background: var(--bg); color: #fff; padding-bottom: 80px; }
@@ -12,203 +12,300 @@
         header { background: #232f3e; padding: 15px; display: flex; justify-content: space-between; position: sticky; top:0; z-index: 1000; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
         
+        /* Page Sections */
+        .page-section { display: none; padding: 10px; }
+        .page-section.active { display: block; }
+
         /* Product Card */
-        .product-card { background: var(--card); color: var(--text); padding: 10px; border-radius: 4px; display: flex; flex-direction: column; }
-        .product-card img { width: 100%; height: 150px; object-fit: cover; border-radius: 2px; }
+        .product-card { background: var(--card); color: var(--text); padding: 10px; border-radius: 4px; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+        .product-card img { width: 100%; height: 160px; object-fit: cover; border-radius: 2px; }
         .price-row { margin: 5px 0; }
-        .curr-price { font-size: 18px; font-weight: bold; }
+        .curr-price { font-size: 18px; font-weight: bold; color: #B12704; }
         .mrp { text-decoration: line-through; color: #565959; font-size: 12px; margin-left: 5px; }
         
         /* Buttons */
         .btn { width: 100%; padding: 10px; border-radius: 20px; border: none; font-weight: bold; cursor: pointer; margin-top: 5px; }
-        .btn-yellow { background: #ffd814; }
-        .btn-orange { background: #ffa41c; }
+        .btn-yellow { background: #ffd814; border: 1px solid #fcd200; }
+        .btn-orange { background: #ffa41c; border: 1px solid #ff8f00; }
 
-        /* Overlays (Login, Checkout, Admin) */
+        /* Overlays */
         .overlay { position: fixed; inset: 0; background: #fff; color: #111; z-index: 5000; padding: 20px; display: none; overflow-y: auto; }
-        .active { display: block; }
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #a6a6a6; border-radius: 3px; box-sizing: border-box; }
-
-        /* Admin Dashboard */
-        .admin-nav { display: flex; gap: 10px; margin-bottom: 20px; }
-        .admin-tab { padding: 10px; background: #eee; cursor: pointer; border-radius: 5px; flex: 1; text-align: center; }
-        .order-card { background: #f9f9f9; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 5px; font-size: 13px; }
+        .overlay.show { display: block; }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
 
         /* Bottom Nav */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #232f3e; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #3a4553; }
         .nav-item { text-align: center; font-size: 11px; color: #ccc; cursor: pointer; }
+        .nav-item.active-nav { color: var(--amz-orange); font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="login-overlay" class="overlay">
-    <h2>Sign-In</h2>
-    <label>Email or Mobile</label>
-    <input type="text" id="login-id">
-    <label>Password</label>
-    <input type="password" id="login-pass">
-    <button class="btn btn-orange" onclick="doLogin()">Continue</button>
+    <center><h1 style="color:#232f3e">SRP SKETCH</h1></center>
+    <div style="border:1px solid #ddd; padding:20px; border-radius:8px; margin-top:20px;">
+        <h2 style="margin-top:0">Sign-In</h2>
+        <label><b>Email or Mobile</b></label>
+        <input type="text" id="login-id">
+        <label><b>Password</b></label>
+        <input type="password" id="login-pass">
+        <button class="btn btn-orange" onclick="doLogin()">Sign-In</button>
+        <p style="font-size:11px; color: #555; margin-top:15px;">By signing in, you agree to SRP's Terms and Conditions.</p>
+    </div>
 </div>
 
 <div id="checkout-overlay" class="overlay">
     <h2>Shipping Details</h2>
-    <div id="item-summary" style="font-weight: bold; margin-bottom: 10px;"></div>
-    <input type="text" id="cust-name" placeholder="Full Name">
-    <input type="text" id="cust-phone" placeholder="Phone Number">
-    <input type="text" id="cust-email" placeholder="Email">
-    <textarea id="cust-addr" placeholder="Full Address"></textarea>
-    <input type="text" id="cust-zip" placeholder="Zip Code">
-    <button class="btn btn-orange" onclick="placeOrder()">Confirm Order (COD/UPI)</button>
-    <button class="btn" onclick="closeOverlays()">Cancel</button>
+    <div id="checkout-info" style="background:#f3f3f3; padding:10px; margin-bottom:10px; border-radius:5px;"></div>
+    <input type="text" id="c-name" placeholder="Full Name">
+    <input type="text" id="c-phone" placeholder="WhatsApp Number">
+    <textarea id="c-addr" placeholder="Full Delivery Address"></textarea>
+    <input type="text" id="c-zip" placeholder="Pincode / Zipcode">
+    
+    <h3>Payment Method</h3>
+    <div style="padding:10px; border:1px solid #ddd; border-radius:5px;">
+        <input type="radio" name="pay" id="p-upi" checked> <label for="p-upi">UPI (Instant QR)</label><br>
+        <input type="radio" name="pay" id="p-cod"> <label for="p-cod">Cash on Delivery</label>
+    </div>
+    
+    <button class="btn btn-orange" onclick="handlePurchase()">Proceed to Payment</button>
+    <button class="btn" onclick="closeOverlays()" style="background:#ddd;">Cancel</button>
 </div>
 
-<div id="admin-overlay" class="overlay">
-    <h2>Admin Dashboard <span onclick="closeOverlays()" style="float:right">×</span></h2>
-    <div class="admin-nav">
-        <div class="admin-tab" onclick="showAdminSection('add-p')">Add Product</div>
-        <div class="admin-tab" onclick="showAdminSection('view-o')">Orders</div>
-    </div>
-
-    <div id="admin-add-p">
-        <input type="text" id="p-title" placeholder="Product Title">
-        <input type="number" id="p-mrp" placeholder="MRP">
-        <input type="number" id="p-price" placeholder="Sale Price">
-        <label>Upload Sketch (Gallery):</label>
-        <input type="file" id="p-image" accept="image/*">
-        <button class="btn btn-orange" onclick="saveProduct()">Upload & Publish</button>
-    </div>
-
-    <div id="admin-view-o" style="display:none;">
-        <h3>Recent Orders</h3>
-        <div id="orders-list"></div>
-    </div>
+<div id="upi-overlay" class="overlay" style="text-align:center;">
+    <h2>Scan & Pay</h2>
+    <div id="qr-code-box"></div>
+    <p>Pay <b>₹<span id="amt-display"></span></b> to <b>SRP STUDIO</b></p>
+    <p style="font-size:12px; color: #666;">Once payment is successful, click below.</p>
+    <button class="btn btn-orange" onclick="finishOrder('UPI PAID')">I Have Paid</button>
 </div>
 
 <header>
-    <div>SRP SKETCH</div>
-    <div onclick="checkAdmin()">⚙️</div>
+    <div style="color: var(--amz-orange); font-size: 22px; font-weight: bold;">SRP SKETCH</div>
 </header>
 
-<div class="grid" id="main-grid"></div>
+<div id="home-page" class="page-section active">
+    <div class="grid" id="product-grid"></div>
+</div>
+
+<div id="rishi-page" class="page-section">
+    <center><h3>AI Rishi Shopping Assistant</h3><p>Rishi is analyzing your preferences...</p></center>
+</div>
+
+<div id="wallet-page" class="page-section">
+    <h3>My Wallet</h3>
+    <div style="background:#232f3e; padding:30px; border-radius:10px; text-align:center;">
+        <small>Total Balance</small>
+        <h1>₹0.00</h1>
+        <button class="btn btn-yellow" style="width:auto; padding:10px 40px;">Add Money</button>
+    </div>
+</div>
+
+<div id="cart-page" class="page-section">
+    <h3>Shopping Cart</h3>
+    <div id="cart-content"></div>
+    <div id="cart-total" style="padding:15px; text-align:right;"></div>
+    <button id="cart-buy-all" class="btn btn-orange" style="display:none;" onclick="alert('Proceeding to Checkout...')">Checkout All</button>
+</div>
+
+<div id="admin-page" class="page-section">
+    <div style="background:#fff; color:#111; padding:15px; border-radius:5px;">
+        <h3>Admin Controls</h3>
+        <button class="btn btn-yellow" onclick="showAdminTab('upload')">Add Product</button>
+        <button class="btn btn-yellow" onclick="showAdminTab('orders')">View Orders</button>
+        <button class="btn btn-yellow" onclick="showAdminTab('pass')">Security</button>
+        <hr>
+        
+        <div id="admin-upload">
+            <input type="text" id="p-title" placeholder="Sketch Title">
+            <input type="number" id="p-mrp" placeholder="MRP (999)">
+            <input type="number" id="p-price" placeholder="Sale Price (499)">
+            <input type="file" id="p-file" accept="image/*" style="background:#eee;">
+            <button class="btn btn-orange" onclick="adminUpload()">Publish Product</button>
+        </div>
+
+        <div id="admin-orders" style="display:none;">
+            <h4>Recent Orders</h4>
+            <div id="order-logs"></div>
+        </div>
+
+        <div id="admin-pass" style="display:none;">
+            <h4>Change Admin Password</h4>
+            <input type="text" id="new-pwd" placeholder="New Password">
+            <button class="btn btn-orange" onclick="updatePass()">Save New Password</button>
+        </div>
+    </div>
+</div>
 
 <nav class="bottom-nav">
-    <div class="nav-item" onclick="location.reload()">🏠<br>Home</div>
-    <div class="nav-item">🤖<br>Rishi</div>
-    <div class="nav-item">💳<br>Wallet</div>
-    <div class="nav-item">🛒<br>Cart</div>
+    <div class="nav-item active-nav" onclick="changePage('home')">🏠<br>Home</div>
+    <div class="nav-item" onclick="changePage('rishi')">🤖<br>Rishi</div>
+    <div class="nav-item" onclick="changePage('wallet')">💳<br>Wallet</div>
+    <div class="nav-item" onclick="changePage('cart')">🛒<br>Cart</div>
     <div class="nav-item" onclick="checkAdmin()">⚙️<br>Admin</div>
 </nav>
 
 <script>
+    // --- SETTINGS ---
+    const MY_UPI = "subhashrajpurohit406@okaxis";
+    let adminKey = localStorage.getItem('srp_admin_key') || "SRP786";
     let products = JSON.parse(localStorage.getItem('srp_products')) || [];
+    let cart = JSON.parse(localStorage.getItem('srp_cart')) || [];
     let orders = JSON.parse(localStorage.getItem('srp_orders')) || [];
-    let currentItem = null;
+    let currentBuying = null;
 
-    // --- AUTH ---
-    if(!localStorage.getItem('user_logged')) {
-        document.getElementById('login-overlay').classList.add('active');
+    // --- NAVIGATION ---
+    function changePage(id) {
+        document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+        document.getElementById(id + '-page').classList.add('active');
+        
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active-nav'));
+        event.currentTarget.classList.add('active-nav');
+        
+        if(id === 'cart') renderCart();
     }
 
+    // --- AUTH ---
+    if(!localStorage.getItem('is_logged')) document.getElementById('login-overlay').classList.add('show');
     function doLogin() {
-        let id = document.getElementById('login-id').value;
-        if(id) {
-            localStorage.setItem('user_logged', id);
+        if(document.getElementById('login-id').value) {
+            localStorage.setItem('is_logged', 'true');
             closeOverlays();
         }
     }
 
     // --- ADMIN ---
     function checkAdmin() {
-        let pass = prompt("Enter Admin Password:");
-        if(pass === "SRP786") {
-            document.getElementById('admin-overlay').classList.add('active');
+        let p = prompt("Enter Admin Password:");
+        if(p === adminKey) {
+            changePage('admin');
             renderOrders();
-        }
+        } else { alert("Wrong Password"); }
     }
 
-    function showAdminSection(sect) {
-        document.getElementById('admin-add-p').style.display = sect === 'add-p' ? 'block' : 'none';
-        document.getElementById('admin-view-o').style.display = sect === 'view-o' ? 'block' : 'none';
+    function showAdminTab(t) {
+        document.getElementById('admin-upload').style.display = t === 'upload' ? 'block' : 'none';
+        document.getElementById('admin-orders').style.display = t === 'orders' ? 'block' : 'none';
+        document.getElementById('admin-pass').style.display = t === 'pass' ? 'block' : 'none';
     }
 
-    // GALLERY UPLOAD LOGIC (No API Key)
-    function saveProduct() {
-        const file = document.getElementById('p-image').files[0];
+    function updatePass() {
+        let n = document.getElementById('new-pwd').value;
+        if(n) { adminKey = n; localStorage.setItem('srp_admin_key', n); alert("Password updated!"); }
+    }
+
+    function adminUpload() {
+        const file = document.getElementById('p-file').files[0];
         const reader = new FileReader();
-        
-        reader.onloadend = function() {
-            const newP = {
+        reader.onloadend = () => {
+            products.push({
                 title: document.getElementById('p-title').value,
                 mrp: document.getElementById('p-mrp').value,
                 price: document.getElementById('p-price').value,
-                img: reader.result // This is the Base64 image string
-            };
-            products.push(newP);
+                img: reader.result
+            });
             localStorage.setItem('srp_products', JSON.stringify(products));
             renderProducts();
-            alert("Sketch Added to Store!");
+            alert("Product Live!");
         };
         if(file) reader.readAsDataURL(file);
     }
 
-    // --- SHOPPING ---
-    function openCheckout(index) {
-        currentItem = products[index];
-        document.getElementById('item-summary').innerText = "Buying: " + currentItem.title + " (₹" + currentItem.price + ")";
-        document.getElementById('checkout-overlay').classList.add('active');
-    }
-
-    function placeOrder() {
-        const order = {
-            item: currentItem.title,
-            price: currentItem.price,
-            name: document.getElementById('cust-name').value,
-            phone: document.getElementById('cust-phone').value,
-            email: document.getElementById('cust-email').value,
-            address: document.getElementById('cust-addr').value,
-            zip: document.getElementById('cust-zip').value,
-            date: new Date().toLocaleString(),
-            status: "Pending"
-        };
-        orders.push(order);
-        localStorage.setItem('srp_orders', JSON.stringify(orders));
-        alert("Order Received! We will contact you soon.");
-        closeOverlays();
-    }
-
-    // --- RENDERERS ---
+    // --- STORE LOGIC ---
     function renderProducts() {
-        const grid = document.getElementById('main-grid');
+        const grid = document.getElementById('product-grid');
         grid.innerHTML = products.map((p, i) => `
             <div class="product-card">
                 <img src="${p.img}">
-                <div style="margin-top:5px; font-weight:bold;">${p.title}</div>
+                <div style="font-weight:500; margin-top:5px; height:35px; overflow:hidden;">${p.title}</div>
                 <div class="price-row">
                     <span class="curr-price">₹${p.price}</span>
                     <span class="mrp">₹${p.mrp}</span>
                 </div>
-                <button class="btn btn-yellow">Add to Cart</button>
+                <button class="btn btn-yellow" onclick="addToCart(${i})">Add to Cart</button>
                 <button class="btn btn-orange" onclick="openCheckout(${i})">Buy Now</button>
             </div>
         `).join('');
     }
 
+    function addToCart(i) {
+        cart.push(products[i]);
+        localStorage.setItem('srp_cart', JSON.stringify(cart));
+        alert("Added to Cart!");
+    }
+
+    function renderCart() {
+        const box = document.getElementById('cart-content');
+        if(cart.length === 0) return box.innerHTML = "<center>Cart is empty</center>";
+        
+        let total = 0;
+        box.innerHTML = cart.map((item, i) => {
+            total += parseInt(item.price);
+            return `<div style="display:flex; padding:10px; border-bottom:1px solid #444;">
+                <img src="${item.img}" style="width:40px; height:40px; border-radius:4px;">
+                <div style="margin-left:10px;">${item.title}<br><b>₹${item.price}</b></div>
+                <div style="margin-left:auto;" onclick="removeFromCart(${i})">❌</div>
+            </div>`;
+        }).join('');
+        document.getElementById('cart-total').innerHTML = `<h3>Total: ₹${total}</h3>`;
+        document.getElementById('cart-buy-all').style.display = "block";
+    }
+
+    function removeFromCart(i) {
+        cart.splice(i,1);
+        localStorage.setItem('srp_cart', JSON.stringify(cart));
+        renderCart();
+    }
+
+    // --- PURCHASE & UPI ---
+    function openCheckout(i) {
+        currentBuying = products[i];
+        document.getElementById('checkout-info').innerText = `Buying: ${currentBuying.title} - ₹${currentBuying.price}`;
+        document.getElementById('checkout-overlay').classList.add('show');
+    }
+
+    function handlePurchase() {
+        const method = document.getElementById('p-upi').checked ? "UPI" : "COD";
+        if(!document.getElementById('c-name').value) return alert("Enter Name");
+        
+        if(method === "UPI") {
+            document.getElementById('amt-display').innerText = currentBuying.price;
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${MY_UPI}&pn=SRP_STUDIO&am=${currentBuying.price}&cu=INR`;
+            document.getElementById('qr-code-box').innerHTML = `<img src="${qrUrl}">`;
+            document.getElementById('upi-overlay').classList.add('show');
+        } else {
+            finishOrder("COD");
+        }
+    }
+
+    function finishOrder(method) {
+        orders.push({
+            p: currentBuying.title,
+            price: currentBuying.price,
+            name: document.getElementById('c-name').value,
+            phone: document.getElementById('c-phone').value,
+            addr: document.getElementById('c-addr').value,
+            pay: method,
+            time: new Date().toLocaleString()
+        });
+        localStorage.setItem('srp_orders', JSON.stringify(orders));
+        alert("Order Received!");
+        closeOverlays();
+        changePage('home');
+    }
+
     function renderOrders() {
-        const list = document.getElementById('orders-list');
-        list.innerHTML = orders.map(o => `
-            <div class="order-card">
-                <b>Product: ${o.item} (₹${o.price})</b><br>
-                Name: ${o.name} | Phone: ${o.phone}<br>
-                Address: ${o.address}, ${o.zip}<br>
-                Email: ${o.email}<br>
-                <small>Time: ${o.date}</small>
+        document.getElementById('order-logs').innerHTML = orders.map(o => `
+            <div style="background:#f4f4f4; padding:10px; margin-bottom:5px; border-radius:4px; font-size:12px; color:#111;">
+                <b>${o.p} (₹${o.price})</b><br>
+                ${o.name} | ${o.phone}<br>
+                ${o.addr}<br>
+                <span style="color:green">${o.pay}</span> | ${o.time}
             </div>
         `).reverse().join('');
     }
 
-    function closeOverlays() {
-        document.querySelectorAll('.overlay').forEach(o => o.classList.remove('active'));
-    }
+    function closeOverlays() { document.querySelectorAll('.overlay').forEach(o => o.classList.remove('show')); }
 
     renderProducts();
 </script>
