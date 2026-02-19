@@ -1,75 +1,219 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>SRP Sketch</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
 
 <style>
-body{
-font-family:Arial;
-margin:0;
-background:#f3f3f3;
-}
+    :root { --amz-navy: #131921; --amz-orange: #febd69; --btn-gold: #ffd814; --bg: #eaeded; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; }
 
-header{
-background:#131921;
-color:white;
-padding:15px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
+    /* Login Screen Style */
+    #auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: white; text-align: center; font-family: sans-serif; }
+    .login-box { padding: 40px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .login-btn { background: #4285F4; color: white; border: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 20px; }
 
-.search{
-width:50%;
-padding:8px;
-}
+    /* Nav & Banner */
+    .promo-banner { background: #232f3e; color: var(--amz-orange); text-align: center; padding: 12px; font-weight: bold; font-size: 14px; }
+    .nav { background: var(--amz-navy); padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; color: white; position: sticky; top: 0; z-index: 1000; }
+    
+    /* Dropdown */
+    .acc-root { position: relative; cursor: pointer; }
+    .dropdown { display: none; position: absolute; right: 0; top: 100%; background: white; min-width: 200px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); padding: 15px; color: #333; z-index: 1001; }
+    .acc-root:hover .dropdown { display: block; }
+    .dropdown a { display: block; color: #007185; text-decoration: none; padding: 8px 0; font-size: 13px; cursor: pointer; }
 
-.products{
-display:grid;
-grid-template-columns:repeat(2,1fr);
-gap:15px;
-padding:15px;
-}
-
-.card{
-background:white;
-padding:10px;
-border-radius:8px;
-text-align:center;
-}
-
-button{
-background:#ffd814;
-border:none;
-padding:8px;
-width:100%;
-}
+    /* Products Grid */
+    .container { max-width: 1200px; margin: 20px auto; padding: 15px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; }
+    .card img { width: 100%; height: 250px; object-fit: contain; border-radius: 4px; }
+    
+    /* Buttons & Modals */
+    .btn-buy { background: var(--btn-gold); border: 1px solid #a88734; padding: 10px; border-radius: 20px; width: 100%; cursor: pointer; font-weight: bold; margin-top: 10px; }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 5000; }
+    .modal-content { background: white; max-width: 400px; margin: 50px auto; padding: 25px; border-radius: 8px; position: relative; }
+    .hidden { display: none !important; }
+    input, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
 </style>
-</head>
 
-<body>
-
-<header>
-<h2>SRP Sketch</h2>
-<input class="search" placeholder="Search products">
-<div>Cart 🛒</div>
-</header>
-
-<div class="products">
-
-<div class="card">
-<img src="https://via.placeholder.com/150">
-<h3>Shoes</h3>
-<button>Add to Cart</button>
+<div id="auth-screen">
+    <div class="login-box">
+        <h2 style="margin:0;">SRP STUDIO</h2>
+        <p style="color:#555;">लॉगिन करें और हमारी एक्सक्लूसिव स्केच कलेक्शन देखें</p>
+        <button class="login-btn" onclick="srp_login()">Google के साथ लॉगिन करें</button>
+    </div>
 </div>
 
-<div class="card">
-<img src="https://via.placeholder.com/150">
-<h3>Watch</h3>
-<button>Add to Cart</button>
+<div id="main-app" class="hidden">
+    <div class="promo-banner">🔥 धमाका सेल: SRP-STUDIO के स्केच पर 60% की भारी छूट 🔥</div>
+    
+    <div class="nav">
+        <div style="font-size: 22px; font-weight: bold;">SRP STUDIO</div>
+        <div class="acc-root">
+            <span style="font-size: 12px;">नमस्ते, <span id="user-name">User</span></span>
+            <div style="font-weight: bold;">Account & Orders ▼</div>
+            <div class="dropdown">
+                <a onclick="alert('आपके ऑर्डर्स की जांच की जा रही है...')">📦 मेरे ऑर्डर्स</a>
+                <div id="admin-only" class="hidden">
+                    <hr>
+                    <b style="color:red; font-size:12px;">ADMIN TOOLS</b>
+                    <a onclick="document.getElementById('admin-modal').style.display='block'" style="color:red;">➕ नया स्केच जोड़ें</a>
+                </div>
+                <hr>
+                <a onclick="srp_logout()" style="color: #B12704;">लॉगआउट करें</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="product-grid">
+        </div>
 </div>
 
+<div id="buy-modal" class="modal">
+    <div class="modal-content">
+        <h3 id="order-title">चेकआउट</h3>
+        <div id="ship-step">
+            <input type="text" id="cust-name" placeholder="आपका पूरा नाम">
+            <input type="text" id="cust-phone" placeholder="WhatsApp नंबर">
+            <textarea id="cust-addr" placeholder="पूरा पता और पिनकोड"></textarea>
+            <button class="btn-buy" onclick="srp_showPay()">पेमेंट पर जाएँ</button>
+        </div>
+        <div id="pay-step" class="hidden" style="text-align: center;">
+            <p>Scan & Pay <b id="order-price"></b></p>
+            <div id="qr-display"></div>
+            <button class="btn-buy" id="confirm-btn" onclick="srp_placeOrder()" style="background:#ffa41c;">मैंने पेमेंट कर दिया है - कन्फर्म करें</button>
+        </div>
+        <button onclick="srp_close()" style="border:none; background:none; color:gray; cursor:pointer; width:100%; margin-top:10px;">बंद करें</button>
+    </div>
 </div>
 
-</body>
-</html>
+<div id="admin-modal" class="modal">
+    <div class="modal-content">
+        <h3>नया स्केच ऐड करें</h3>
+        <input type="text" id="sk-title" placeholder="स्केच का नाम">
+        <input type="number" id="sk-price" placeholder="कीमत (जैसे 1599)">
+        <input type="text" id="sk-img" placeholder="इमेज लिंक (Blogger से)">
+        <button class="btn-buy" style="background:#232f3e; color:white;" onclick="srp_addSketch()">पब्लिश करें</button>
+        <button onclick="srp_close()" style="border:none; background:none; color:gray; cursor:pointer; width:100%; margin-top:10px;">कैंसिल</button>
+    </div>
+</div>
+
+<script>
+// Firebase & EmailJS Setup
+const firebaseConfig = {
+  apiKey: "AIzaSyBkzZBxUPvwxbqVhSsXkPZqvAagreUGpWo",
+  authDomain: "srp-studio.firebaseapp.com",
+  projectId: "srp-studio",
+  storageBucket: "srp-studio.firebasestorage.app",
+  messagingSenderId: "19992552340",
+  appId: "1:19992552340:web:83d2bdbaaa23e3d80ea581"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+emailjs.init("X11X6r_ZionHfbg7S");
+
+const MY_EMAIL = "subhashrajpurohit406@gmail.com"; // आपका एडमिन ईमेल
+let currentItem = {};
+
+// Auth Logic
+auth.onAuthStateChanged(user => {
+    if (user) {
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('main-app').classList.remove('hidden');
+        document.getElementById('user-name').innerText = user.displayName || "User";
+        
+        if (user.email === MY_EMAIL) {
+            document.getElementById('admin-only').classList.remove('hidden');
+        }
+        srp_loadSketches();
+    } else {
+        document.getElementById('auth-screen').classList.remove('hidden');
+        document.getElementById('main-app').classList.add('hidden');
+    }
+});
+
+function srp_login() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider);
+}
+
+function srp_logout() { auth.signOut().then(() => location.reload()); }
+
+// Admin: Add Sketch
+async function srp_addSketch() {
+    const title = document.getElementById('sk-title').value;
+    const price = document.getElementById('sk-price').value;
+    const img = document.getElementById('sk-img').value;
+    
+    if(!title || !price || !img) return alert("सभी जानकारी भरें");
+    
+    await db.collection("products").add({ title, price, img, date: new Date() });
+    alert("स्केच दुकान में जोड़ दिया गया है!");
+    location.reload();
+}
+
+// Load Sketches
+async function srp_loadSketches() {
+    const grid = document.getElementById('product-grid');
+    grid.innerHTML = "स्केच लोड हो रहे हैं...";
+    
+    const snap = await db.collection("products").orderBy("date", "desc").get();
+    grid.innerHTML = "";
+    
+    snap.forEach(doc => {
+        const p = doc.data();
+        grid.innerHTML += `
+            <div class="card">
+                <img src="${p.img}">
+                <h3>${p.title}</h3>
+                <div style="color:#B12704; font-size:22px; margin:10px 0;">₹${p.price}</div>
+                <button class="btn-buy" onclick="srp_openBuy('${p.title}', '${p.price}')">अभी खरीदें</button>
+            </div>
+        `;
+    });
+}
+
+// Order Logic
+function srp_openBuy(t, p) {
+    currentItem = { t, p };
+    document.getElementById('order-title').innerText = t;
+    document.getElementById('order-price').innerText = "₹" + p;
+    document.getElementById('buy-modal').style.display = 'block';
+    document.getElementById('ship-step').classList.remove('hidden');
+    document.getElementById('pay-step').classList.add('hidden');
+}
+
+function srp_showPay() {
+    if(!document.getElementById('cust-name').value) return alert("नाम भरें");
+    const upi = `upi://pay?pa=subhashrajpurohit406@oksbi&pn=SRPSTUDIO&am=${currentItem.p}&cu=INR`;
+    document.getElementById('qr-display').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upi)}" style="border:1px solid #ddd; padding:5px;">`;
+    document.getElementById('ship-step').classList.add('hidden');
+    document.getElementById('pay-step').classList.remove('hidden');
+}
+
+async function srp_placeOrder() {
+    const btn = document.getElementById('confirm-btn');
+    btn.innerText = "प्रोसेस हो रहा है...";
+    btn.disabled = true;
+
+    const data = {
+        from_name: document.getElementById('cust-name').value,
+        cust_phone: document.getElementById('cust-phone').value,
+        cust_email: auth.currentUser.email,
+        cust_address: document.getElementById('cust-addr').value,
+        item_details: `${currentItem.t} (₹${currentItem.p})`,
+        name: document.getElementById('cust-name').value,
+        time: new Date().toLocaleString()
+    };
+
+    try {
+        await db.collection("orders").add(data);
+        await emailjs.send("service_1vwithf", "template_tsqitjp", data);
+        alert("सफलता! आपका ऑर्डर बुक हो गया है।");
+        location.reload();
+    } catch(e) { location.reload(); }
+}
+
+function srp_close() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
+</script>
