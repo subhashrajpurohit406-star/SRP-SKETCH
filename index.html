@@ -272,5 +272,19 @@
         if(q.includes("stock")) reply = "If a sketch shows 'Out of Stock', it is currently unavailable for purchase.";
         
         setTimeout(() => {
-            logs.innerHTML += `<div class="msg" style="color:var(--amz-orange)">
+            logs.innerHTML += `<div class="msg" style="color:var(--amz-orange)"><b>Rishi:</b> ${reply}</div>`;
+            logs.scrollTop = logs.scrollHeight;
+        }, 500);
+        document.getElementById('rishi-input').value = "";
+    }
 
+    function renderOrderLogs() {
+        document.getElementById('order-logs').innerHTML = orders.map(o => `
+            <div style="background:#eee; padding:10px; margin-bottom:5px; border-radius:5px; font-size:12px; color:#111;">
+                <b>${o.item}</b> by ${o.user} (${o.phone})<br>Addr: ${o.addr}
+            </div>
+        `).reverse().join('');
+    }
+</script>
+</body>
+</html>
