@@ -1,73 +1,94 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>SRP Sketch</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<style>
-body{margin:0;font-family:Arial;background:#f2f2f2;}
-
-.nav{
-background:#131921;
-color:white;
-padding:10px;
-display:flex;
-gap:10px;
-}
-
-.nav input{
-flex:1;
-padding:8px;
-}
-
-.products{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
-padding:10px;
-}
-
-.card{
-background:white;
-padding:10px;
-border-radius:10px;
-}
-
-<button onclick="addItem('Drawing Book',199)">Add to Cart</button>
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRP SKETCH | Marketplace</title>
+    <style>
+        :root { --primary: #232f3e; --accent: #febd69; --bg: #ffffff; --text: #111; }
+        body.dark-mode { --bg: #121212; --text: #f5f5f5; --primary: #000; }
+        
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); transition: 0.3s; }
+        
+        /* Navigation Tabs */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--primary); display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; }
+        .nav-item { color: white; text-align: center; font-size: 12px; cursor: pointer; }
+        
+        /* Product Layout */
+        .container { padding: 15px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 70px; }
+        .card { border: 1px solid #ddd; border-radius: 8px; overflow: hidden; animation: fadeIn 0.5s ease-in; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Hidden Panels */
+        .panel { display: none; padding: 20px; }
+        .active { display: block; }
+    </style>
 </head>
+<body class="dark-mode">
 
-<body>
+    <header style="background: var(--primary); padding: 10px; color: white;">
+        <h2 style="margin:0;">SRP SKETCH</h2>
+    </header>
 
-<div class="nav">
-<b>SRP Sketch</b>
-<input placeholder="Search">
-</div>
+    <div id="home" class="panel active">
+        <div class="container" id="product-list">
+            </div>
+    </div>
 
-<div class="products">
+    <div id="rishi" class="panel">
+        <h3>AI Rishi Assistant</h3>
+        <div id="chat-box" style="height: 300px; border: 1px solid #ccc; overflow-y: auto; padding: 10px;"></div>
+        <input type="text" id="user-input" placeholder="Ask Rishi to shop...">
+        <button onclick="askRishi()">Send</button>
+    </div>
 
-<div class="card">
-<h3>Sketch Pencil Set</h3>
-<p>₹299</p>
-<button>Add to Cart</button>
-</div>
+    <div id="wallet" class="panel">
+        <h3>Your Wallet: ₹<span id="bal">0.00</span></h3>
+        <button onclick="addMoney()">Top Up via UPI</button>
+    </div>
 
-<div class="card">
-<h3>Drawing Book</h3>
-<p>₹199</p>
-<button>Add to Cart</button>
-</div>
+    <nav class="bottom-nav">
+        <div class="nav-item" onclick="showTab('home')">🏠<br>Home</div>
+        <div class="nav-item" onclick="showTab('rishi')">🤖<br>Rishi</div>
+        <div class="nav-item" onclick="showTab('wallet')">💳<br>Wallet</div>
+        <div class="nav-item" onclick="showTab('cart')">🛒<br>Cart</div>
+        <div class="nav-item" onclick="showTab('admin')">⚙️<br>Admin</div>
+    </nav>
 
-</div>
-<script>
-let cart = [];
+    <script>
+        // 1. Tab Navigation System
+        function showTab(tabId) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+        }
 
-function addItem(name, price){
-cart.push({name,price});
-alert(name + " added to cart");
-console.log(cart);
-}
-</script>
+        // 2. LocalStorage Cart Logic
+        let cart = JSON.parse(localStorage.getItem('srp_cart')) || [];
+        function addToCart(pName, price) {
+            cart.push({pName, price});
+            localStorage.setItem('srp_cart', JSON.stringify(cart));
+            alert(pName + " added to cart!");
+        }
+
+        // 3. AI Rishi Shopping Assistant (Simple logic)
+        async function askRishi() {
+            const input = document.getElementById('user-input').value;
+            const chat = document.getElementById('chat-box');
+            chat.innerHTML += `<p><b>You:</b> ${input}</p>`;
+            
+            // Integrate with ChatGPT API here
+            let reply = "I am looking for sketches related to " + input;
+            chat.innerHTML += `<p><b>Rishi:</b> ${reply}</p>`;
+        }
+
+        // 4. UPI QR Auto Generation
+        function addMoney() {
+            const upiId = "YOUR_UPI@okaxis"; 
+            const amount = 500;
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiId}&am=${amount}`;
+            window.open(qrUrl, '_blank');
+        }
+    </script>
 </body>
 </html>
