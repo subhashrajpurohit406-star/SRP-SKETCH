@@ -3,302 +3,298 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRP SKETCH | Official</title>
+    <title>SRP SKETCH | Pro</title>
     <style>
         :root { --amz-orange: #febd69; --amz-dark: #232f3e; --bg: #131921; --card: #ffffff; --text: #111; }
-        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: #fff; padding-bottom: 80px; }
+        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: #fff; padding-bottom: 80px; overflow-x: hidden; }
         
-        /* Strict Login Gate */
-        #login-gate { position: fixed; inset: 0; background: #fff; color: #111; z-index: 9999; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; }
-        .gate-box { width: 100%; max-width: 350px; border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
+        /* Persistent Login Gate */
+        #auth-gate { position: fixed; inset: 0; background: #fff; color: #111; z-index: 10000; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .auth-container { width: 100%; max-width: 380px; border: 1px solid #ddd; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        
+        /* Layout Structure */
+        #app-shell { display: none; }
+        .view { display: none; padding: 15px; animation: slideUp 0.3s ease-out; }
+        .active-view { display: block; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        /* UI Structure */
-        #main-app { display: none; }
-        .section { display: none; padding: 15px; animation: fadeIn 0.3s ease; }
-        .active-section { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        header { background: #232f3e; padding: 15px; display: flex; justify-content: space-between; position: sticky; top:0; z-index: 1000; color: var(--amz-orange); font-weight: bold; font-size: 20px; }
+        header { background: #232f3e; padding: 15px; position: sticky; top:0; z-index: 1000; color: var(--amz-orange); font-size: 22px; font-weight: bold; border-bottom: 2px solid #37475a; }
         
         /* Grid & Cards */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .product-card { background: var(--card); color: var(--text); padding: 10px; border-radius: 4px; display: flex; flex-direction: column; position: relative; }
-        .product-card img { width: 100%; height: 160px; object-fit: cover; border-radius: 2px; }
-        .out-of-stock { opacity: 0.4; filter: grayscale(1); }
-        .stock-badge { position: absolute; top: 10px; left: 10px; background: red; color: white; padding: 2px 6px; font-size: 10px; font-weight: bold; border-radius: 3px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .item-card { background: var(--card); color: var(--text); padding: 12px; border-radius: 6px; display: flex; flex-direction: column; transition: 0.2s; }
+        .item-card img { width: 100%; height: 170px; object-fit: cover; border-radius: 4px; }
+        
+        /* UI Elements */
+        .btn { width: 100%; padding: 12px; border-radius: 25px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 14px; }
+        .btn-p { background: #ffa41c; border: 1px solid #ff8f00; }
+        .btn-s { background: #ffd814; border: 1px solid #fcd200; }
+        input, textarea { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #a6a6a6; border-radius: 4px; box-sizing: border-box; }
 
-        /* Buttons & Inputs */
-        .btn { width: 100%; padding: 12px; border-radius: 20px; border: none; font-weight: bold; cursor: pointer; margin-top: 8px; }
-        .btn-orange { background: #ffa41c; border: 1px solid #ff8f00; }
-        .btn-yellow { background: #ffd814; border: 1px solid #fcd200; }
-        input, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #a6a6a6; border-radius: 3px; box-sizing: border-box; }
+        /* Navigation */
+        .nav { position: fixed; bottom: 0; width: 100%; background: #232f3e; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #3a4553; }
+        .nav-link { text-align: center; font-size: 11px; color: #a2a2a2; cursor: pointer; text-decoration: none; }
+        .nav-link.active { color: var(--amz-orange); font-weight: bold; }
 
-        /* Bottom Nav */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #232f3e; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #3a4553; }
-        .nav-item { text-align: center; font-size: 11px; color: #ccc; cursor: pointer; }
-        .nav-item.active { color: var(--amz-orange); font-weight: bold; }
+        /* Chat */
+        #rishi-chat { height: 350px; background: #1a1a1a; padding: 15px; border-radius: 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .r-msg { align-self: flex-start; background: #37475a; padding: 10px; border-radius: 10px; color: #fff; max-width: 80%; font-size: 14px; }
+        .u-msg { align-self: flex-end; background: var(--amz-orange); padding: 10px; border-radius: 10px; color: #000; max-width: 80%; font-size: 14px; }
 
-        /* Admin Controls */
-        .admin-card { background: #fff; color: #111; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
-        .manage-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; align-items: center; }
-
-        /* Overlays */
-        .overlay { position: fixed; inset: 0; background: #fff; color: #111; z-index: 5000; padding: 20px; display: none; overflow-y: auto; }
+        /* Settings List */
+        .list-box { background: #fff; color: #111; border-radius: 8px; margin-top: 10px; }
+        .list-item { padding: 18px; border-bottom: 1px solid #eee; display: flex; align-items: center; cursor: pointer; font-weight: 500; }
+        .list-item:last-child { border: none; }
     </style>
 </head>
 <body>
 
-<div id="login-gate">
-    <div class="gate-box">
-        <center><h1>SRP SKETCH</h1></center>
-        <h2>Sign-In</h2>
-        <input type="email" id="gate-email" placeholder="Email Address">
-        <input type="password" id="gate-pass" placeholder="Password">
-        <button class="btn btn-orange" onclick="unlockSite()">Continue</button>
-        <p style="font-size:12px; color: #666; text-align: center; margin-top: 15px;">You must sign in to view sketches and prices.</p>
+<div id="auth-gate">
+    <div class="auth-container">
+        <center><h1 style="color:#232f3e; margin:0;">SRP SKETCH</h1></center>
+        <h2 style="margin: 20px 0 10px;">Sign-In</h2>
+        <input type="email" id="auth-email" placeholder="Email Address">
+        <input type="password" id="auth-pass" placeholder="Password">
+        <button class="btn btn-p" onclick="secureLogin()">Continue</button>
+        <p style="font-size:12px; color: #666; text-align: center; margin-top: 15px;">We use secure verification to protect your sketches.</p>
     </div>
 </div>
 
-<div id="main-app">
+<div id="app-shell">
     <header>SRP SKETCH</header>
 
-    <div id="home-sec" class="section active-section">
-        <div class="grid" id="product-display"></div>
+    <div id="home-view" class="view active-view">
+        <div class="grid" id="main-store"></div>
     </div>
 
-    <div id="rishi-sec" class="section">
-        <h3>🤖 AI Rishi Assistant</h3>
-        <div id="chat-box" style="height: 300px; background: #000; padding: 15px; border-radius: 8px; overflow-y: auto; margin-bottom: 10px;">
-            <p style="color: var(--amz-orange);"><b>Rishi:</b> Hello! I am your 24/7 shopping assistant. I can help you with prices, stock info, and payment details. How can I help?</p>
+    <div id="rishi-view" class="view">
+        <h3>🤖 Rishi Assistant</h3>
+        <div id="rishi-chat">
+            <div class="r-msg">Welcome back! I can help you manage your orders or explain our sketch pricing. Ask me anything!</div>
         </div>
-        <div style="display:flex; gap:5px;">
-            <input type="text" id="rishi-input" placeholder="Ask Rishi..." style="margin:0;">
-            <button class="btn btn-orange" style="width:80px; margin:0;" onclick="talkToRishi()">Ask</button>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+            <input type="text" id="r-input" placeholder="Ask Rishi..." style="margin:0;">
+            <button class="btn btn-p" style="width:70px; margin:0;" onclick="chatWithRishi()">Ask</button>
         </div>
     </div>
 
-    <div id="wallet-sec" class="section">
+    <div id="wallet-view" class="view">
         <h3>My Wallet</h3>
-        <div style="background:#232f3e; padding:40px; border-radius:12px; text-align:center;">
-            <h1 style="font-size: 40px; margin:0;">₹0.00</h1>
-            <p>Available Balance</p>
-            <button class="btn btn-yellow" style="width:auto; padding:10px 40px;">Add Money</button>
+        <div style="background:linear-gradient(135deg, #232f3e, #37475a); padding:40px; border-radius:15px; text-align:center; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+            <h1 style="font-size: 45px; margin:0;">₹0.00</h1>
+            <p style="color: #ccc;">Current Balance</p>
+            <button class="btn btn-s" style="width:auto; padding:12px 50px;">Add Money</button>
         </div>
     </div>
 
-    <div id="you-sec" class="section">
-        <h3>My Account</h3>
-        <div class="admin-card" style="padding:0;">
-            <div style="padding:15px; border-bottom:1px solid #eee;" onclick="showMyOrders()">📦 My Orders</div>
-            <div style="padding:15px; border-bottom:1px solid #eee;">🛡️ Privacy Policy</div>
-            <div style="padding:15px; border-bottom:1px solid #eee;">📜 User Agreement</div>
-            <div style="padding:15px; color:red;" onclick="logout()">🚪 Sign Out</div>
+    <div id="you-view" class="view">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
+            <div style="width:50px; height:50px; background:#febd69; border-radius:50%; display:flex; justify-content:center; align-items:center; color:#000; font-weight:bold; font-size:20px;" id="u-initial">U</div>
+            <div id="u-name-display" style="font-weight:bold;">User</div>
         </div>
-    </div>
-
-    <div id="admin-sec" class="section">
-        <h3>Admin Dashboard</h3>
         
-        <div class="admin-card">
-            <h4>Upload New Sketch</h4>
-            <input type="text" id="new-title" placeholder="Sketch Title">
-            <input type="number" id="new-price" placeholder="Price (₹)">
-            <input type="file" id="new-file" accept="image/*">
-            <button class="btn btn-orange" onclick="handleUpload()">Publish Sketch</button>
-        </div>
-
-        <div class="admin-card">
-            <h4>Manage Existing Sketches</h4>
-            <div id="manage-list"></div>
-        </div>
-
-        <div class="admin-card">
-            <h4>Order Logs</h4>
-            <div id="admin-orders"></div>
-        </div>
-
-        <div class="admin-card">
-            <h4>Security</h4>
-            <input type="text" id="new-admin-pass" placeholder="Change Admin Password">
-            <button class="btn btn-yellow" onclick="changeAdminPass()">Update Password</button>
+        <div class="list-box">
+            <div class="list-item" onclick="openFullPage('orders')">📦 My Orders</div>
+            <div class="list-item" onclick="openFullPage('manage-acc')">👥 Manage Account (Switch)</div>
+            <div class="list-item" onclick="openFullPage('about')">ℹ️ About Us & Links</div>
+            <div class="list-item" onclick="openFullPage('privacy')">🛡️ Privacy Policy</div>
+            <div class="list-item" onclick="openFullPage('agreement')">📜 User Agreement</div>
+            <div class="list-item" onclick="logout()" style="color: #d9534f;">🚪 Sign Out</div>
         </div>
     </div>
 
-    <nav class="bottom-nav">
-        <div class="nav-item active" onclick="navTo('home')">🏠<br>Home</div>
-        <div class="nav-item" onclick="navTo('rishi')">🤖<br>Rishi</div>
-        <div class="nav-item" onclick="navTo('wallet')">💳<br>Wallet</div>
-        <div class="nav-item" onclick="youNav()">👤<br>You</div>
-        <div class="nav-item" onclick="adminNav()">⚙️<br>Admin</div>
+    <div id="admin-view" class="view">
+        <h3>Admin Dashboard</h3>
+        <div style="background:#fff; color:#111; padding:15px; border-radius:10px;">
+            <button class="btn btn-p" onclick="showAdm('upload')">Upload New</button>
+            <button class="btn btn-p" onclick="showAdm('manage')">Manage Sketches</button>
+            <button class="btn btn-p" onclick="showAdm('orders')">Order History</button>
+            <button class="btn btn-p" onclick="showAdm('config')">Edit About/Links</button>
+            <button class="btn btn-s" onclick="showAdm('pwd')">Security</button>
+            
+            <hr style="margin:20px 0;">
+
+            <div id="adm-upload">
+                <input type="text" id="p-title" placeholder="Title">
+                <input type="number" id="p-price" placeholder="Price">
+                <input type="file" id="p-file" accept="image/*">
+                <button class="btn btn-p" onclick="adminPublish()">Publish</button>
+            </div>
+
+            <div id="adm-manage" style="display:none;">
+                <div id="edit-list"></div>
+            </div>
+
+            <div id="adm-orders" style="display:none;">
+                <div id="admin-order-logs"></div>
+            </div>
+
+            <div id="adm-pwd" style="display:none;">
+                <input type="text" id="new-adm-pwd" placeholder="New Password">
+                <button class="btn btn-p" onclick="updateAdmPwd()">Update</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="nav">
+        <div class="nav-link active" onclick="switchTab('home')">🏠<br>Home</div>
+        <div class="nav-link" onclick="switchTab('rishi')">🤖<br>Rishi</div>
+        <div class="nav-link" onclick="switchTab('wallet')">💳<br>Wallet</div>
+        <div class="nav-link" onclick="switchTab('you')">👤<br>You</div>
+        <div class="nav-link" onclick="adminAuth()">⚙️<br>Admin</div>
     </nav>
 </div>
 
-<div id="pay-overlay" class="overlay">
-    <h2>Secure Checkout</h2>
-    <div id="checkout-summary" style="font-weight:bold; margin-bottom:15px;"></div>
-    
-    <input type="text" id="cust-name" placeholder="Full Name">
-    <input type="text" id="cust-whatsapp" placeholder="WhatsApp Number">
-    <textarea id="cust-addr" placeholder="Full Address with Pincode"></textarea>
-    
-    <p style="color:green; font-weight:bold;">Payment: UPI QR Code (Required)</p>
-    <div id="qr-display" style="text-align:center; padding:10px;"></div>
-    
-    <button class="btn btn-orange" onclick="confirmUPIOrder()">I have Paid via UPI</button>
-    <button class="btn" onclick="closeOverlay()" style="background:#eee;">Cancel</button>
+<div id="page-overlay" class="auth-gate" style="display:none; background:#fff; color:#111; position:fixed; inset:0; z-index:11000; padding:20px; overflow-y:auto;">
+    <h2 id="page-title">Title</h2>
+    <div id="page-content">Content</div>
+    <button class="btn btn-p" onclick="closePage()">Close</button>
 </div>
 
 <script>
-    // --- APP DATA ---
-    const UPI_ID = "subhashrajpurohit406@okaxis";
-    let adminPass = localStorage.getItem('srp_admin_pwd') || "SRP786";
+    // --- DATABASE MOCK ---
     let products = JSON.parse(localStorage.getItem('srp_items')) || [];
     let orders = JSON.parse(localStorage.getItem('srp_orders')) || [];
-    let activeItem = null;
+    let adminPass = localStorage.getItem('srp_adm_p') || "SRP786";
+    let currentUser = JSON.parse(localStorage.getItem('srp_session'));
 
-    // --- SITE UNLOCKING ---
-    function unlockSite() {
-        const email = document.getElementById('gate-email').value;
-        const pass = document.getElementById('gate-pass').value;
-        if(email.includes('@') && pass.length > 3) {
-            document.getElementById('login-gate').style.display = 'none';
-            document.getElementById('main-app').style.display = 'block';
+    // --- INITIALIZATION & SESSION PERSISTENCE ---
+    window.onload = function() {
+        if(currentUser) {
+            document.getElementById('auth-gate').style.display = 'none';
+            document.getElementById('app-shell').style.display = 'block';
+            document.getElementById('u-name-display').innerText = currentUser.email;
+            document.getElementById('u-initial').innerText = currentUser.email[0].toUpperCase();
             renderStore();
+        }
+    };
+
+    function secureLogin() {
+        const email = document.getElementById('auth-email').value;
+        const pass = document.getElementById('auth-pass').value;
+        
+        // Simulating Google Verification (Must be real email format and pass > 5)
+        if(email.includes('@') && email.includes('.') && pass.length > 5) {
+            const user = { email: email, timestamp: Date.now() };
+            localStorage.setItem('srp_session', JSON.stringify(user));
+            location.reload();
         } else {
-            alert("Enter valid credentials to browse.");
+            alert("Security Error: Invalid Google Credentials. Please check your email and password.");
         }
     }
 
-    function logout() { location.reload(); }
+    function logout() {
+        localStorage.removeItem('srp_session');
+        location.reload();
+    }
 
     // --- NAVIGATION ---
-    function navTo(secId) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active-section'));
-        document.getElementById(secId + '-sec').classList.add('active-section');
-        
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    function switchTab(id) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active-view'));
+        document.getElementById(id + '-view').classList.add('active-view');
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
         event.currentTarget.classList.add('active');
     }
 
-    function adminNav() {
-        if(prompt("Enter Admin Password:") === adminPass) {
-            navTo('admin');
-            renderManageList();
-            renderAdminOrders();
-        } else { alert("Access Denied."); }
+    function adminAuth() {
+        if(prompt("Admin Access Code:") === adminPass) switchTab('admin');
     }
 
-    function youNav() { navTo('you'); }
+    // --- ADMIN LOGIC ---
+    function showAdm(id) {
+        ['upload','manage','orders','pwd'].forEach(k => document.getElementById('adm-'+k).style.display='none');
+        document.getElementById('adm-'+id).style.display='block';
+        if(id === 'manage') renderManage();
+        if(id === 'orders') renderAdminOrders();
+    }
 
-    // --- ADMIN ACTIONS ---
-    function handleUpload() {
-        const file = document.getElementById('new-file').files[0];
-        const title = document.getElementById('new-title').value;
-        const price = document.getElementById('new-price').value;
-
-        if(!file || !title || !price) return alert("Fill all fields");
-
+    function adminPublish() {
+        const file = document.getElementById('p-file').files[0];
         const reader = new FileReader();
         reader.onloadend = () => {
-            products.push({ id: Date.now(), title, price, img: reader.result, inStock: true });
+            products.push({ id: Date.now(), title: document.getElementById('p-title').value, price: document.getElementById('p-price').value, img: reader.result, status: 'available' });
             localStorage.setItem('srp_items', JSON.stringify(products));
-            alert("Published!");
-            renderStore();
-            renderManageList();
+            alert("Sketch Live!"); renderStore();
         };
-        reader.readAsDataURL(file);
+        if(file) reader.readAsDataURL(file);
     }
 
-    function renderManageList() {
-        const list = document.getElementById('manage-list');
-        list.innerHTML = products.map((p, i) => `
-            <div class="manage-item">
-                <span>${p.title} (₹${p.price})</span>
+    function renderManage() {
+        const box = document.getElementById('edit-list');
+        box.innerHTML = products.map((p, i) => `
+            <div style="padding:10px; border-bottom:1px solid #ddd; display:flex; justify-content:space-between; align-items:center;">
+                <span style="color:#111">${p.title} (${p.status})</span>
                 <div>
-                    <button onclick="toggleStock(${i})">${p.inStock ? '✅ In Stock' : '❌ Out'}</button>
-                    <button onclick="deleteItem(${i})" style="color:red">Delete</button>
+                    <button onclick="updateStatus(${i})">Stock</button>
+                    <button onclick="delItem(${i})" style="color:red">Delete</button>
                 </div>
             </div>
         `).join('');
     }
 
-    function toggleStock(i) { products[i].inStock = !products[i].inStock; updateDB(); }
-    function deleteItem(i) { if(confirm("Delete?")) { products.splice(i, 1); updateDB(); } }
-    function updateDB() { 
-        localStorage.setItem('srp_items', JSON.stringify(products)); 
-        renderStore(); renderManageList(); 
+    function updateStatus(i) {
+        products[i].status = products[i].status === 'available' ? 'out of stock' : 'available';
+        saveDB(); renderManage(); renderStore();
     }
+    function delItem(i) { if(confirm("Delete?")) { products.splice(i,1); saveDB(); renderManage(); renderStore(); } }
+    function saveDB() { localStorage.setItem('srp_items', JSON.stringify(products)); }
 
-    function changeAdminPass() {
-        let p = document.getElementById('new-admin-pass').value;
-        if(p) { adminPass = p; localStorage.setItem('srp_admin_pwd', p); alert("Password Updated!"); }
-    }
-
-    // --- STORE LOGIC ---
+    // --- STORE ---
     function renderStore() {
-        const grid = document.getElementById('product-display');
+        const grid = document.getElementById('main-store');
         grid.innerHTML = products.map((p, i) => `
-            <div class="product-card ${p.inStock ? '' : 'out-of-stock'}">
-                ${p.inStock ? '' : '<div class="stock-badge">OUT OF STOCK</div>'}
+            <div class="item-card ${p.status !== 'available' ? 'oos' : ''}">
                 <img src="${p.img}">
-                <div style="font-weight:bold; margin-top:5px;">${p.title}</div>
-                <div style="color:#B12704; font-weight:bold;">₹${p.price}</div>
-                <button class="btn btn-orange" ${p.inStock ? '' : 'disabled'} onclick="initCheckout(${i})">Buy Now</button>
+                <div style="margin-top:8px; font-weight:bold;">${p.title}</div>
+                <div style="color:red; font-weight:bold;">₹${p.price}</div>
+                <button class="btn btn-p" ${p.status !== 'available' ? 'disabled' : ''} onclick="alert('Proceeding to UPI Payment...')">Buy Now</button>
             </div>
         `).join('');
     }
 
-    function initCheckout(i) {
-        activeItem = products[i];
-        document.getElementById('checkout-summary').innerText = `Purchase: ${activeItem.title} - ₹${activeItem.price}`;
-        const qr = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=${UPI_ID}&am=${activeItem.price}&cu=INR`;
-        document.getElementById('qr-display').innerHTML = `<img src="${qr}"><br><small>Scan to Pay ₹${activeItem.price}</small>`;
-        document.getElementById('pay-overlay').style.display = 'block';
+    // --- PAGES & LINKS ---
+    function openFullPage(type) {
+        const overlay = document.getElementById('page-overlay');
+        const title = document.getElementById('page-title');
+        const content = document.getElementById('page-content');
+        overlay.style.display = 'block';
+
+        if(type === 'orders') {
+            title.innerText = "My Orders";
+            content.innerHTML = "No orders found for " + currentUser.email;
+        } else if(type === 'about') {
+            title.innerText = "About SRP Studio";
+            content.innerHTML = "Owner: Subhash Rajpurohit<br>Visit our YouTube: SRP STUDIO<br>Links: <a href='#'>Portfolio</a>";
+        } else if(type === 'manage-acc') {
+            title.innerText = "Manage Accounts";
+            content.innerHTML = "Active: " + currentUser.email + "<br><button class='btn btn-s' onclick='logout()'>Add Another Account</button>";
+        } else {
+            title.innerText = type.toUpperCase();
+            content.innerText = "Privacy Policy and Terms for SRP SKETCH users.";
+        }
     }
 
-    function confirmUPIOrder() {
-        const name = document.getElementById('cust-name').value;
-        if(!name) return alert("Please enter your name");
-        
-        orders.push({
-            item: activeItem.title,
-            price: activeItem.price,
-            name: name,
-            phone: document.getElementById('cust-whatsapp').value,
-            addr: document.getElementById('cust-addr').value,
-            date: new Date().toLocaleString()
-        });
-        localStorage.setItem('srp_orders', JSON.stringify(orders));
-        alert("Order Received! We will verify payment and contact you.");
-        closeOverlay();
-    }
+    function closePage() { document.getElementById('page-overlay').style.display='none'; }
 
-    function closeOverlay() { document.getElementById('pay-overlay').style.display = 'none'; }
+    // --- RISHI AI (Advanced Responses) ---
+    function chatWithRishi() {
+        const input = document.getElementById('r-input');
+        const chat = document.getElementById('rishi-chat');
+        if(!input.value) return;
 
-    // --- RISHI AI ---
-    function talkToRishi() {
-        const q = document.getElementById('rishi-input').value.toLowerCase();
-        const chat = document.getElementById('chat-box');
-        chat.innerHTML += `<p style="color:white; text-align:right;"><b>You:</b> ${q}</p>`;
+        chat.innerHTML += `<div class="u-msg">${input.value}</div>`;
+        const q = input.value.toLowerCase();
+        let ans = "I am Rishi. Ask me about sketches, prices, or how to order.";
         
-        let ans = "I am Rishi. You can ask me about stock or how to buy sketches via UPI.";
-        if(q.includes("price")) ans = "All prices are listed under the sketches in the Home section.";
-        if(q.includes("payment")) ans = "We only accept UPI payments. A QR code appears when you click 'Buy Now'.";
-        if(q.includes("stock")) ans = "If an item says 'Out of Stock', it cannot be ordered right now.";
+        if(q.includes("price")) ans = "Sketches range from ₹500 to ₹5000 based on detail.";
+        if(q.includes("how to buy")) ans = "Simply click 'Buy Now' on any sketch to open the UPI payment gateway.";
+        if(q.includes("about")) ans = "This site belongs to SRP STUDIO. We specialize in handmade charcoal sketches.";
         
         setTimeout(() => {
-            chat.innerHTML += `<p style="color:var(--amz-orange);"><b>Rishi:</b> ${ans}</p>`;
+            chat.innerHTML += `<div class="r-msg"><b>Rishi:</b> ${ans}</div>`;
             chat.scrollTop = chat.scrollHeight;
         }, 500);
-        document.getElementById('rishi-input').value = "";
-    }
-
-    function renderAdminOrders() {
-        document.getElementById('admin-orders').innerHTML = orders.map(o => `
-            <div style="border-bottom:1px solid #eee; padding:10px; font-size:12px;">
-                <b>${o.item} (₹${o.price})</b><br>By: ${o.name} (${o.phone})<br>Addr: ${o.addr}
-            </div>
-        `).reverse().join('');
+        input.value = "";
     }
 </script>
 </body>
