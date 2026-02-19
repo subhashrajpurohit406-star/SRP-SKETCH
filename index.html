@@ -3,200 +3,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRP SKETCH | Amazon Pro</title>
+    <title>SRP SKETCH | Pro Marketplace</title>
     <style>
-        :root { --amz-orange: #febd69; --amz-dark: #232f3e; --bg: #131921; --card: #232f3e; --text: #ffffff; }
-        body { margin: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+        :root { --amz-orange: #febd69; --amz-dark: #232f3e; --bg: #131921; --card: #ffffff; --text: #111; }
+        body { margin: 0; font-family: Arial, sans-serif; background: var(--bg); color: #fff; padding-bottom: 80px; }
         
-        /* Amazon Style Login */
-        #auth-screen { position: fixed; inset: 0; background: #fff; z-index: 5000; color: #111; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .auth-container { width: 100%; max-width: 350px; }
-        .auth-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #a6a6a6; border-radius: 3px; box-sizing: border-box; }
-        .amz-btn { background: linear-gradient(to bottom, #f7dfa5, #f0c14b); border: 1px solid #a88734; padding: 10px; width: 100%; border-radius: 3px; cursor: pointer; font-size: 14px; }
-
-        /* UI Layout */
-        header { background: #232f3e; padding: 10px 15px; display: flex; align-items: center; position: sticky; top:0; z-index: 100; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; margin-bottom: 80px; }
-        .product-card { background: #fff; color: #111; padding: 10px; border-radius: 4px; display: flex; flex-direction: column; position: relative; }
-        .product-card img { width: 100%; height: 160px; object-fit: cover; border-radius: 2px; }
+        /* Navigation & Headers */
+        header { background: #232f3e; padding: 15px; display: flex; justify-content: space-between; position: sticky; top:0; z-index: 1000; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
         
-        /* Price Styling */
-        .price-row { margin: 8px 0; }
+        /* Product Card */
+        .product-card { background: var(--card); color: var(--text); padding: 10px; border-radius: 4px; display: flex; flex-direction: column; }
+        .product-card img { width: 100%; height: 150px; object-fit: cover; border-radius: 2px; }
+        .price-row { margin: 5px 0; }
         .curr-price { font-size: 18px; font-weight: bold; }
-        .mrp { text-decoration: line-through; color: #565959; font-size: 13px; margin-left: 5px; }
-        .off { color: #CC0C39; font-size: 13px; }
+        .mrp { text-decoration: line-through; color: #565959; font-size: 12px; margin-left: 5px; }
+        
+        /* Buttons */
+        .btn { width: 100%; padding: 10px; border-radius: 20px; border: none; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        .btn-yellow { background: #ffd814; }
+        .btn-orange { background: #ffa41c; }
 
-        /* Action Buttons */
-        .btn-add { background: #ffd814; border: 1px solid #fcd200; border-radius: 20px; padding: 8px; margin-bottom: 5px; cursor: pointer; }
-        .btn-buy { background: #ffa41c; border: 1px solid #ff8f00; border-radius: 20px; padding: 8px; cursor: pointer; }
+        /* Overlays (Login, Checkout, Admin) */
+        .overlay { position: fixed; inset: 0; background: #fff; color: #111; z-index: 5000; padding: 20px; display: none; overflow-y: auto; }
+        .active { display: block; }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #a6a6a6; border-radius: 3px; box-sizing: border-box; }
 
-        /* Admin Panel */
-        #admin-panel { display: none; position: fixed; inset: 0; background: #1a1a1a; z-index: 4000; padding: 20px; overflow-y: auto; }
-        .admin-box { background: #2a2a2a; padding: 15px; border-radius: 8px; border: 1px solid var(--amz-orange); }
+        /* Admin Dashboard */
+        .admin-nav { display: flex; gap: 10px; margin-bottom: 20px; }
+        .admin-tab { padding: 10px; background: #eee; cursor: pointer; border-radius: 5px; flex: 1; text-align: center; }
+        .order-card { background: #f9f9f9; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 5px; font-size: 13px; }
 
         /* Bottom Nav */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #232f3e; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #3a4553; }
         .nav-item { text-align: center; font-size: 11px; color: #ccc; cursor: pointer; }
-        .nav-item.active { color: var(--amz-orange); }
     </style>
 </head>
 <body>
 
-<div id="auth-screen">
-    <div class="auth-container">
-        <center><h1 style="color:#111">SRP SKETCH</h1></center>
-        <div style="border: 1px solid #ddd; padding: 20px; border-radius: 8px;">
-            <h2 style="margin-top:0">Sign-In</h2>
-            <label><b>Email or mobile phone number</b></label>
-            <input type="text" id="user-email" class="auth-input">
-            <label><b>Password</b></label>
-            <input type="password" id="user-pass" class="auth-input">
-            <button class="amz-btn" onclick="handleAuth()">Continue</button>
-            <p style="font-size:12px; color: #555; margin-top:15px;">By continuing, you agree to SRP's Conditions of Use and Privacy Notice.</p>
-        </div>
+<div id="login-overlay" class="overlay">
+    <h2>Sign-In</h2>
+    <label>Email or Mobile</label>
+    <input type="text" id="login-id">
+    <label>Password</label>
+    <input type="password" id="login-pass">
+    <button class="btn btn-orange" onclick="doLogin()">Continue</button>
+</div>
+
+<div id="checkout-overlay" class="overlay">
+    <h2>Shipping Details</h2>
+    <div id="item-summary" style="font-weight: bold; margin-bottom: 10px;"></div>
+    <input type="text" id="cust-name" placeholder="Full Name">
+    <input type="text" id="cust-phone" placeholder="Phone Number">
+    <input type="text" id="cust-email" placeholder="Email">
+    <textarea id="cust-addr" placeholder="Full Address"></textarea>
+    <input type="text" id="cust-zip" placeholder="Zip Code">
+    <button class="btn btn-orange" onclick="placeOrder()">Confirm Order (COD/UPI)</button>
+    <button class="btn" onclick="closeOverlays()">Cancel</button>
+</div>
+
+<div id="admin-overlay" class="overlay">
+    <h2>Admin Dashboard <span onclick="closeOverlays()" style="float:right">×</span></h2>
+    <div class="admin-nav">
+        <div class="admin-tab" onclick="showAdminSection('add-p')">Add Product</div>
+        <div class="admin-tab" onclick="showAdminSection('view-o')">Orders</div>
+    </div>
+
+    <div id="admin-add-p">
+        <input type="text" id="p-title" placeholder="Product Title">
+        <input type="number" id="p-mrp" placeholder="MRP">
+        <input type="number" id="p-price" placeholder="Sale Price">
+        <label>Upload Sketch (Gallery):</label>
+        <input type="file" id="p-image" accept="image/*">
+        <button class="btn btn-orange" onclick="saveProduct()">Upload & Publish</button>
+    </div>
+
+    <div id="admin-view-o" style="display:none;">
+        <h3>Recent Orders</h3>
+        <div id="orders-list"></div>
     </div>
 </div>
 
 <header>
-    <div style="font-size: 22px; font-weight: bold; color: var(--amz-orange);">SRP SKETCH</div>
+    <div>SRP SKETCH</div>
+    <div onclick="checkAdmin()">⚙️</div>
 </header>
 
-<div class="grid" id="main-grid">
-    </div>
-
-<div id="admin-panel">
-    <div class="admin-box">
-        <h2 style="margin-top:0">Admin Control <span onclick="closeAdmin()" style="float:right; cursor:pointer;">×</span></h2>
-        
-        <label>Change Admin Password:</label>
-        <input type="text" id="new-admin-pass" placeholder="New Password" class="auth-input">
-        <button class="amz-btn" onclick="updateAdminPass()" style="margin-bottom:20px;">Update Password</button>
-        <hr>
-        
-        <h3>Upload New Sketch</h3>
-        <input type="text" id="p-title" placeholder="Sketch Title" class="auth-input">
-        <input type="number" id="p-mrp" placeholder="MRP" class="auth-input">
-        <input type="number" id="p-price" placeholder="Sale Price" class="auth-input">
-        
-        <label>Select Sketch from Gallery:</label>
-        <input type="file" id="p-file" accept="image/*" class="auth-input" style="background:#fff; color:#000">
-        
-        <button id="upload-btn" class="amz-btn" onclick="uploadAndSave()" style="background: #2ecc71; border:none; color:#fff;">🚀 Publish Product</button>
-    </div>
-</div>
+<div class="grid" id="main-grid"></div>
 
 <nav class="bottom-nav">
-    <div class="nav-item active" onclick="showTab('home')">🏠<br>Home</div>
-    <div class="nav-item" onclick="showTab('rishi')">🤖<br>Rishi</div>
-    <div class="nav-item" onclick="showTab('wallet')">💳<br>Wallet</div>
-    <div class="nav-item" onclick="showTab('cart')">🛒<br>Cart</div>
-    <div class="nav-item" onclick="checkAdminAccess()">⚙️<br>Admin</div>
+    <div class="nav-item" onclick="location.reload()">🏠<br>Home</div>
+    <div class="nav-item">🤖<br>Rishi</div>
+    <div class="nav-item">💳<br>Wallet</div>
+    <div class="nav-item">🛒<br>Cart</div>
+    <div class="nav-item" onclick="checkAdmin()">⚙️<br>Admin</div>
 </nav>
 
 <script>
-    // Configuration
-    const IMGBB_API_KEY = "YOUR_IMGBB_API_KEY_HERE"; 
-    let adminPassword = localStorage.getItem('srp_admin_pwd') || "SRP786";
-    let products = JSON.parse(localStorage.getItem('srp_db')) || [];
+    let products = JSON.parse(localStorage.getItem('srp_products')) || [];
+    let orders = JSON.parse(localStorage.getItem('srp_orders')) || [];
+    let currentItem = null;
 
-    // --- AUTH LOGIC ---
-    function handleAuth() {
-        const email = document.getElementById('user-email').value;
-        const pass = document.getElementById('user-pass').value;
-        if(email && pass) {
-            localStorage.setItem('srp_user', email);
-            document.getElementById('auth-screen').style.display = 'none';
+    // --- AUTH ---
+    if(!localStorage.getItem('user_logged')) {
+        document.getElementById('login-overlay').classList.add('active');
+    }
+
+    function doLogin() {
+        let id = document.getElementById('login-id').value;
+        if(id) {
+            localStorage.setItem('user_logged', id);
+            closeOverlays();
+        }
+    }
+
+    // --- ADMIN ---
+    function checkAdmin() {
+        let pass = prompt("Enter Admin Password:");
+        if(pass === "SRP786") {
+            document.getElementById('admin-overlay').classList.add('active');
+            renderOrders();
+        }
+    }
+
+    function showAdminSection(sect) {
+        document.getElementById('admin-add-p').style.display = sect === 'add-p' ? 'block' : 'none';
+        document.getElementById('admin-view-o').style.display = sect === 'view-o' ? 'block' : 'none';
+    }
+
+    // GALLERY UPLOAD LOGIC (No API Key)
+    function saveProduct() {
+        const file = document.getElementById('p-image').files[0];
+        const reader = new FileReader();
+        
+        reader.onloadend = function() {
+            const newP = {
+                title: document.getElementById('p-title').value,
+                mrp: document.getElementById('p-mrp').value,
+                price: document.getElementById('p-price').value,
+                img: reader.result // This is the Base64 image string
+            };
+            products.push(newP);
+            localStorage.setItem('srp_products', JSON.stringify(products));
             renderProducts();
-        } else {
-            alert("Please enter details");
-        }
+            alert("Sketch Added to Store!");
+        };
+        if(file) reader.readAsDataURL(file);
     }
 
-    // --- ADMIN LOGIC ---
-    function checkAdminAccess() {
-        let entry = prompt("Enter Admin Password:");
-        if(entry === adminPassword) {
-            document.getElementById('admin-panel').style.display = 'block';
-        } else {
-            alert("Access Denied");
-        }
+    // --- SHOPPING ---
+    function openCheckout(index) {
+        currentItem = products[index];
+        document.getElementById('item-summary').innerText = "Buying: " + currentItem.title + " (₹" + currentItem.price + ")";
+        document.getElementById('checkout-overlay').classList.add('active');
     }
 
-    function updateAdminPass() {
-        let newPwd = document.getElementById('new-admin-pass').value;
-        if(newPwd) {
-            adminPassword = newPwd;
-            localStorage.setItem('srp_admin_pwd', newPwd);
-            alert("Password updated!");
-        }
+    function placeOrder() {
+        const order = {
+            item: currentItem.title,
+            price: currentItem.price,
+            name: document.getElementById('cust-name').value,
+            phone: document.getElementById('cust-phone').value,
+            email: document.getElementById('cust-email').value,
+            address: document.getElementById('cust-addr').value,
+            zip: document.getElementById('cust-zip').value,
+            date: new Date().toLocaleString(),
+            status: "Pending"
+        };
+        orders.push(order);
+        localStorage.setItem('srp_orders', JSON.stringify(orders));
+        alert("Order Received! We will contact you soon.");
+        closeOverlays();
     }
 
-    async function uploadAndSave() {
-        const fileInput = document.getElementById('p-file');
-        const title = document.getElementById('p-title').value;
-        const mrp = document.getElementById('p-mrp').value;
-        const price = document.getElementById('p-price').value;
-        const btn = document.getElementById('upload-btn');
-
-        if(!fileInput.files[0] || !title) return alert("Fill all fields");
-
-        btn.innerText = "Uploading... Please wait";
-        btn.disabled = true;
-
-        // Upload to ImgBB
-        const formData = new FormData();
-        formData.append("image", fileInput.files[0]);
-
-        try {
-            const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-                method: "POST",
-                body: formData
-            });
-            const data = await response.json();
-            const imageUrl = data.data.url;
-
-            // Save to Product List
-            const newProduct = { title, mrp, price, img: imageUrl };
-            products.push(newProduct);
-            localStorage.setItem('srp_db', JSON.stringify(products));
-            
-            renderProducts();
-            alert("Published Successfully!");
-            closeAdmin();
-        } catch (e) {
-            alert("Upload failed. Check API Key.");
-        } finally {
-            btn.innerText = "🚀 Publish Product";
-            btn.disabled = false;
-        }
-    }
-
-    // --- UI LOGIC ---
+    // --- RENDERERS ---
     function renderProducts() {
         const grid = document.getElementById('main-grid');
         grid.innerHTML = products.map((p, i) => `
             <div class="product-card">
-                <img src="${p.img}" alt="sketch">
-                <div style="font-weight:500; margin-top:5px; height:40px; overflow:hidden;">${p.title}</div>
+                <img src="${p.img}">
+                <div style="margin-top:5px; font-weight:bold;">${p.title}</div>
                 <div class="price-row">
                     <span class="curr-price">₹${p.price}</span>
-                    <span class="mrp">M.R.P: ₹${p.mrp}</span>
-                    <div class="off">(${Math.round(100-(p.price/p.mrp*100))}% off)</div>
+                    <span class="mrp">₹${p.mrp}</span>
                 </div>
-                <button class="btn-add" onclick="alert('Added to Cart')">Add to Cart</button>
-                <button class="btn-buy" onclick="window.location.href='https://wa.me/YOUR_PHONE?text=Buy:${p.title}'">Buy Now</button>
+                <button class="btn btn-yellow">Add to Cart</button>
+                <button class="btn btn-orange" onclick="openCheckout(${i})">Buy Now</button>
             </div>
         `).join('');
     }
 
-    function closeAdmin() { document.getElementById('admin-panel').style.display = 'none'; }
-    function showTab(t) { alert(t + " section loading..."); }
+    function renderOrders() {
+        const list = document.getElementById('orders-list');
+        list.innerHTML = orders.map(o => `
+            <div class="order-card">
+                <b>Product: ${o.item} (₹${o.price})</b><br>
+                Name: ${o.name} | Phone: ${o.phone}<br>
+                Address: ${o.address}, ${o.zip}<br>
+                Email: ${o.email}<br>
+                <small>Time: ${o.date}</small>
+            </div>
+        `).reverse().join('');
+    }
 
-    // Auto-check if logged in
-    if(localStorage.getItem('srp_user')) document.getElementById('auth-screen').style.display = 'none';
+    function closeOverlays() {
+        document.querySelectorAll('.overlay').forEach(o => o.classList.remove('active'));
+    }
+
     renderProducts();
 </script>
-
 </body>
 </html>
-
