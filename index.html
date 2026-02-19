@@ -33,11 +33,7 @@ padding:10px;
 border-radius:10px;
 }
 
-button{
-background:#ff9900;
-border:none;
-padding:10px;
-width:100%;
+<button onclick="addItem('Drawing Book',199)">Add to Cart</button>
 }
 </style>
 </head>
@@ -64,6 +60,14 @@ width:100%;
 </div>
 
 </div>
+<script>
+let cart = [];
 
+function addItem(name, price){
+cart.push({name,price});
+alert(name + " added to cart");
+console.log(cart);
+}
+</script>
 </body>
 </html>
