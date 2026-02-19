@@ -3,92 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRP SKETCH | Marketplace</title>
+    <title>SRP SKETCH | Amazon Style</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
-        :root { --primary: #232f3e; --accent: #febd69; --bg: #ffffff; --text: #111; }
-        body.dark-mode { --bg: #121212; --text: #f5f5f5; --primary: #000; }
+        :root { --amazon-orange: #febd69; --amazon-blue: #232f3e; --bg: #121212; --text: #fff; }
+        body { margin: 0; font-family: Arial, sans-serif; background: var(--bg); color: var(--text); padding-bottom: 70px; }
         
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); transition: 0.3s; }
+        /* Login Overlay */
+        #login-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+        .login-card { background: #1a1a1a; padding: 30px; border-radius: 10px; text-align: center; width: 80%; max-width: 400px; border: 1px solid #333; }
+        .btn-google { background: #4285F4; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; margin-top: 15px; font-weight: bold; }
+
+        /* Amazon Style Grid */
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; }
+        .sketch-card { background: #1e1e1e; border-radius: 5px; padding: 10px; border: 1px solid #333; }
+        .sketch-card img { width: 100%; height: 180px; object-fit: cover; border-radius: 3px; }
+        .price-tag { color: #ff4444; font-size: 18px; font-weight: bold; }
+        .mrp { text-decoration: line-through; color: #888; font-size: 12px; margin-left: 5px; }
+        .discount-badge { background: #cc0c39; color: white; padding: 2px 5px; font-size: 11px; border-radius: 3px; }
         
-        /* Navigation Tabs */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--primary); display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; }
-        .nav-item { color: white; text-align: center; font-size: 12px; cursor: pointer; }
-        
-        /* Product Layout */
-        .container { padding: 15px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 70px; }
-        .card { border: 1px solid #ddd; border-radius: 8px; overflow: hidden; animation: fadeIn 0.5s ease-in; }
-        
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* Hidden Panels */
-        .panel { display: none; padding: 20px; }
-        .active { display: block; }
+        /* Buttons */
+        .btn-cart { width: 100%; background: #ffd814; border: none; padding: 8px; border-radius: 20px; margin-top: 10px; cursor: pointer; }
+        .btn-buy { width: 100%; background: #ffa41c; border: none; padding: 8px; border-radius: 20px; margin-top: 5px; cursor: pointer; }
+
+        /* Admin Panel Modal */
+        #admin-panel { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #222; padding: 20px; border-radius: 10px; border: 2px solid var(--amazon-orange); z-index: 3000; width: 90%; }
+        input { width: 95%; padding: 10px; margin-bottom: 10px; background: #333; color: white; border: 1px solid #444; }
+
+        /* Navigation */
+        .nav { position: fixed; bottom: 0; width: 100%; background: #1a1a1a; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #333; }
+        .nav-item { text-align: center; font-size: 11px; cursor: pointer; }
     </style>
 </head>
-<body class="dark-mode">
+<body>
 
-    <header style="background: var(--primary); padding: 10px; color: white;">
-        <h2 style="margin:0;">SRP SKETCH</h2>
-    </header>
+<div id="login-overlay">
+    <div class="login-card">
+        <h2>Welcome to SRP SKETCH</h2>
+        <p>Sign in to your account</p>
+        <button class="btn-google" onclick="bypassLogin()">Continue with Google</button>
+        <div style="margin: 15px 0; color: #888;">OR</div>
+        <input type="email" placeholder="Email Address">
+        <input type="password" placeholder="Password">
+        <button class="btn-buy" onclick="bypassLogin()">Login</button>
+    </div>
+</div>
 
-    <div id="home" class="panel active">
-        <div class="container" id="product-list">
+<header style="padding: 15px; border-bottom: 1px solid #333;">
+    <h1 style="margin:0; font-size: 20px; color: var(--amazon-orange);">SRP SKETCH</h1>
+</header>
+
+<div class="grid" id="product-container">
+    </div>
+
+<div id="admin-panel">
+    <h3>Admin: Add New Sketch <span onclick="closeAdmin()" style="float:right; cursor:pointer;">×</span></h3>
+    <input type="text" id="admin-pass" placeholder="Enter Admin Password">
+    <input type="text" id="p-title" placeholder="Sketch Title">
+    <input type="number" id="p-mrp" placeholder="MRP (e.g. 999)">
+    <input type="number" id="p-price" placeholder="Discount Price (e.g. 499)">
+    <input type="text" id="p-img" placeholder="Image URL (Direct Link)">
+    <button class="btn-buy" onclick="saveProduct()">Save Product</button>
+</div>
+
+<div class="nav">
+    <div class="nav-item" onclick="showHome()">🏠<br>Home</div>
+    <div class="nav-item">🤖<br>Rishi</div>
+    <div class="nav-item">💳<br>Wallet</div>
+    <div class="nav-item">🛒<br>Cart</div>
+    <div class="nav-item" onclick="openAdmin()">⚙️<br>Admin</div>
+</div>
+
+<script>
+    // Security: Only you know this password
+    const ADMIN_PASS = "SRP786"; 
+    let products = JSON.parse(localStorage.getItem('srp_products')) || [];
+
+    function bypassLogin() {
+        document.getElementById('login-overlay').style.display = 'none';
+    }
+
+    function openAdmin() {
+        document.getElementById('admin-panel').style.display = 'block';
+    }
+
+    function closeAdmin() {
+        document.getElementById('admin-panel').style.display = 'none';
+    }
+
+    function saveProduct() {
+        const pass = document.getElementById('admin-pass').value;
+        if(pass !== ADMIN_PASS) return alert("Wrong Admin Password!");
+
+        const newP = {
+            title: document.getElementById('p-title').value,
+            mrp: document.getElementById('p-mrp').value,
+            price: document.getElementById('p-price').value,
+            img: document.getElementById('p-img').value
+        };
+
+        products.push(newP);
+        localStorage.setItem('srp_products', JSON.stringify(products));
+        renderProducts();
+        closeAdmin();
+        alert("Product Added Successfully!");
+    }
+
+    function renderProducts() {
+        const container = document.getElementById('product-container');
+        container.innerHTML = products.map((p, index) => `
+            <div class="sketch-card">
+                <img src="${p.img}" alt="sketch">
+                <p style="margin: 5px 0; font-size: 14px;">${p.title}</p>
+                <span class="price-tag">₹${p.price}</span>
+                <span class="mrp">₹${p.mrp}</span>
+                <div class="discount-badge">${Math.round(100 - (p.price/p.mrp*100))}% off</div>
+                <button class="btn-cart" onclick="addToCart(${index})">Add to Cart</button>
+                <button class="btn-buy" onclick="buyNow(${index})">Buy Now</button>
             </div>
-    </div>
+        `).join('');
+    }
 
-    <div id="rishi" class="panel">
-        <h3>AI Rishi Assistant</h3>
-        <div id="chat-box" style="height: 300px; border: 1px solid #ccc; overflow-y: auto; padding: 10px;"></div>
-        <input type="text" id="user-input" placeholder="Ask Rishi to shop...">
-        <button onclick="askRishi()">Send</button>
-    </div>
+    function addToCart(i) {
+        alert(products[i].title + " added to cart!");
+    }
 
-    <div id="wallet" class="panel">
-        <h3>Your Wallet: ₹<span id="bal">0.00</span></h3>
-        <button onclick="addMoney()">Top Up via UPI</button>
-    </div>
+    function buyNow(i) {
+        window.location.href = "https://wa.me/YOUR_PHONE_NUMBER?text=I want to buy " + products[i].title;
+    }
 
-    <nav class="bottom-nav">
-        <div class="nav-item" onclick="showTab('home')">🏠<br>Home</div>
-        <div class="nav-item" onclick="showTab('rishi')">🤖<br>Rishi</div>
-        <div class="nav-item" onclick="showTab('wallet')">💳<br>Wallet</div>
-        <div class="nav-item" onclick="showTab('cart')">🛒<br>Cart</div>
-        <div class="nav-item" onclick="showTab('admin')">⚙️<br>Admin</div>
-    </nav>
+    // Initial Load
+    renderProducts();
+</script>
 
-    <script>
-        // 1. Tab Navigation System
-        function showTab(tabId) {
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-        }
-
-        // 2. LocalStorage Cart Logic
-        let cart = JSON.parse(localStorage.getItem('srp_cart')) || [];
-        function addToCart(pName, price) {
-            cart.push({pName, price});
-            localStorage.setItem('srp_cart', JSON.stringify(cart));
-            alert(pName + " added to cart!");
-        }
-
-        // 3. AI Rishi Shopping Assistant (Simple logic)
-        async function askRishi() {
-            const input = document.getElementById('user-input').value;
-            const chat = document.getElementById('chat-box');
-            chat.innerHTML += `<p><b>You:</b> ${input}</p>`;
-            
-            // Integrate with ChatGPT API here
-            let reply = "I am looking for sketches related to " + input;
-            chat.innerHTML += `<p><b>Rishi:</b> ${reply}</p>`;
-        }
-
-        // 4. UPI QR Auto Generation
-        function addMoney() {
-            const upiId = "YOUR_UPI@okaxis"; 
-            const amount = 500;
-            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiId}&am=${amount}`;
-            window.open(qrUrl, '_blank');
-        }
-    </script>
 </body>
 </html>
