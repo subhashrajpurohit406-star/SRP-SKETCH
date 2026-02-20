@@ -3,151 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SRP SHOPPING | Official Store</title>
+    <title>SRP SHOPPING | Online Shopping India</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
     <style>
-        :root { --amz-navy: #232f3e; --amz-orange: #febd69; --bg: #131921; --card: #ffffff; }
-        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: white; padding-bottom: 75px; }
+        :root { 
+            --amz-navy: #232f3e; 
+            --amz-light-navy: #37475a;
+            --amz-orange: #febd69; 
+            --amz-yellow: #ffd814;
+            --bg: #e3e6e6; 
+        }
+
+        body { margin: 0; font-family: 'Amazon Ember', Arial, sans-serif; background: var(--bg); color: #111; overflow-x: hidden; }
         
-        header { background: var(--amz-navy); padding: 15px; border-bottom: 2px solid var(--amz-orange); position: sticky; top:0; z-index: 1000; display: flex; align-items: center; }
-        .menu-btn { font-size: 26px; cursor: pointer; color: var(--amz-orange); margin-right: 15px; }
-        .header-title { color: var(--amz-orange); font-weight: bold; font-size: 20px; flex-grow: 1; text-align: center; margin-right: 40px; }
+        /* AUTHENTICATION GATE (AMAZON STYLE) */
+        #auth-gate { position: fixed; inset: 0; background: #fff; z-index: 9999; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
+        .auth-logo { font-size: 28px; font-weight: 800; color: #000; margin-bottom: 20px; letter-spacing: -1px; }
+        .auth-logo span { color: var(--amz-orange); }
+        .auth-box { width: 90%; max-width: 350px; border: 1px solid #ddd; padding: 25px; border-radius: 8px; }
+        .auth-box h2 { margin: 0 0 15px; font-weight: 400; font-size: 28px; }
+        .auth-box label { font-size: 13px; font-weight: 700; display: block; margin-bottom: 5px; }
+        input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #a6a6a6; border-radius: 3px; box-sizing: border-box; outline-color: #e77600; }
+        .btn-amz { background: linear-gradient(to bottom, #f7dfa5, #f0c14b); border: 1px solid #a88734; border-radius: 3px; padding: 10px; width: 100%; cursor: pointer; font-size: 13px; }
+        .new-to-amz { width: 90%; max-width: 350px; text-align: center; margin-top: 20px; position: relative; }
+        .new-to-amz:before { content: ""; position: absolute; top: 50%; left: 0; right: 0; border-top: 1px solid #e7e7e7; z-index: 1; }
+        .new-to-amz span { background: #fff; padding: 0 10px; position: relative; z-index: 2; color: #767676; font-size: 12px; }
+        .btn-google { background: #fff; border: 1px solid #adb1b8; border-radius: 3px; padding: 10px; width: 100%; margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; }
 
-        #sidebar { position: fixed; left: -260px; top: 0; width: 260px; height: 100%; background: #1a1a1a; transition: 0.3s; z-index: 2000; padding-top: 60px; border-right: 1px solid var(--amz-orange); }
-        #sidebar a { padding: 15px 25px; text-decoration: none; font-size: 16px; color: white; display: block; border-bottom: 1px solid #333; }
-        #sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1500; }
+        /* PRO HEADER */
+        header { background: var(--amz-navy); padding-bottom: 5px; position: sticky; top: 0; z-index: 1000; }
+        .nav-top { display: flex; align-items: center; padding: 10px 15px; gap: 15px; }
+        .logo { color: #fff; font-size: 18px; font-weight: bold; text-decoration: none; }
+        .logo span { color: var(--amz-orange); }
+        .search-container { background: #fff; border-radius: 5px; display: flex; margin: 0 10px 10px; overflow: hidden; height: 45px; }
+        .search-container input { border: none; flex: 1; margin: 0; padding: 0 15px; font-size: 15px; }
+        .search-btn { background: var(--amz-orange); border: none; width: 50px; cursor: pointer; font-size: 20px; }
 
-        .section { display: none; padding: 15px; animation: fadeIn 0.3s ease; }
-        .active { display: block !important; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* HERO AREA */
+        .hero { height: 200px; background: linear-gradient(to bottom, rgba(0,0,0,0), var(--bg)), url('https://m.media-amazon.com/images/I/61N833Wkz9L._SX3000_.jpg'); background-size: cover; margin-bottom: -50px; }
+
+        /* CATEGORIES */
+        .cats { display: flex; overflow-x: auto; padding: 10px; gap: 15px; background: #fff; scrollbar-width: none; }
+        .cat-item { min-width: 70px; text-align: center; font-size: 11px; font-weight: bold; }
+        .cat-item img { width: 50px; height: 50px; border-radius: 50%; background: #f5f5f5; object-fit: contain; }
+
+        /* PRODUCT GRID */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; margin-top: 10px; }
+        .card { background: #fff; border-radius: 4px; padding: 10px; display: flex; flex-direction: column; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .card img { width: 100%; height: 160px; object-fit: contain; }
+        .card-info { margin-top: 10px; }
+        .card-title { font-size: 14px; color: #111; height: 35px; overflow: hidden; margin-bottom: 5px; }
+        .card-price { font-size: 20px; font-weight: bold; }
+        .card-mrp { font-size: 12px; text-decoration: line-through; color: #565959; }
+
+        /* BOTTOM NAV */
+        nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #ddd; z-index: 5000; }
+        .nav-link { text-align: center; color: #111; text-decoration: none; font-size: 11px; flex: 1; }
+        .nav-link svg { width: 22px; height: 22px; margin-bottom: 2px; }
         
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 5px; }
-        .shopping-card { background: #fff; color: #111; padding: 10px; border-radius: 8px; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        .shopping-card img { width: 100%; height: 160px; object-fit: cover; border-radius: 4px; }
-        .oos-tag { position: absolute; top: 10px; left: 10px; background: red; color: white; padding: 2px 8px; font-size: 10px; font-weight: bold; border-radius: 3px; }
-
-        .btn { width: 100%; padding: 12px; border-radius: 25px; border: none; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 14px; }
-        .btn-p { background: #ffa41c; border: 1px solid #ff8f00; }
-        .btn-s { background: #ffd814; border: 1px solid #fcd200; }
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-
-        /* Amazon-Style Auth Gate */
-        #auth-gate { position: fixed; inset: 0; background: #fff; color: #111; z-index: 9999; display: flex; flex-direction: column; align-items: center; padding-top: 40px; }
-        .auth-box { width: 90%; max-width: 350px; border: 1px solid #ddd; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .google-btn { background: white; color: #555; border: 1px solid #888; display: flex; align-items: center; justify-content: center; gap: 10px; border-radius: 4px; padding: 10px; cursor: pointer; font-weight: 500; width: 100%; margin-top: 15px; }
-
-        nav { position: fixed; bottom: 0; width: 100%; background: var(--amz-navy); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #3a4553; z-index: 5000; }
-        .nav-item { text-align: center; font-size: 11px; color: #ccc; cursor: pointer; }
-        .nav-item.active-link { color: var(--amz-orange); font-weight: bold; }
-        
-        #chat-window { height: 250px; background: #000; overflow-y: auto; padding: 15px; border-radius: 8px; border: 1px solid #333; }
-        .order-card { background: #f1f1f1; color: #111; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid var(--amz-orange); font-size: 12px; }
+        /* ADMIN & WALLET PAGES */
+        .section { display: none; padding: 15px; padding-bottom: 100px; }
+        .active-sec { display: block !important; }
+        .wallet-card { background: var(--amz-light-navy); color: #fff; padding: 25px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
     </style>
 </head>
 <body>
 
 <div id="auth-gate">
-    <div style="font-size: 28px; font-weight: bold; margin-bottom: 20px; color: #111;">SRP SHOPPING</div>
+    <div class="auth-logo">srp-shopping<span>.in</span></div>
     <div class="auth-box">
-        <h2 style="margin: 0 0 15px 0; font-size: 22px;">Sign-In</h2>
-        <input type="email" id="u-email" placeholder="Email (Gmail)">
-        <input type="password" id="u-pass" placeholder="Password">
-        <button class="btn btn-p" onclick="handleLogin()">Sign-In</button>
-        <p style="font-size: 12px; color: #555; margin-top: 15px;">By continuing, you agree to SRP SHOPPING's Conditions of Use and Privacy Notice.</p>
+        <h2>Sign-In</h2>
+        <label>Email (phone for mobile accounts)</label>
+        <input type="email" id="u-email" placeholder="example@gmail.com">
+        <label>Password</label>
+        <input type="password" id="u-pass" placeholder="At least 6 characters">
+        <button class="btn-amz" onclick="handleLogin()">Continue</button>
+        <p style="font-size: 12px; margin-top: 15px;">By signing in, you agree to SRP SHOPPING's Conditions of Use.</p>
     </div>
-    <div style="width: 90%; max-width: 350px; text-align: center; margin-top: 20px;">
-        <p style="color: #777; font-size: 12px; border-bottom: 1px solid #ddd; line-height: 0.1em; margin: 10px 0 20px;"><span style="background:#fff; padding:0 10px;">New to SRP SHOPPING?</span></p>
-        <button class="google-btn" onclick="loginWithGoogle()">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" width="18"> Sign in with Google
+    <div class="new-to-amz">
+        <span>New to SRP Shopping?</span>
+        <button class="btn-google" onclick="loginWithGoogle()">
+            <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="18"> Continue with Google
         </button>
     </div>
 </div>
 
-<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
-<div id="sidebar">
-    <a href="#" onclick="switchSec('home')">🏠 Shopping Home</a>
-    <a href="#" onclick="switchSec('wallet')">💳 Wallet Balance</a>
-    <a href="#" onclick="switchSec('you')">👤 Account Settings</a>
-    <a href="#" onclick="switchSec('admin')">⚙️ Admin Control</a>
-    <a href="#" style="color: red; margin-top: 20px;" onclick="logout()">🚪 Sign Out</a>
-</div>
-
 <div id="main-app" style="display:none;">
     <header>
-        <div class="menu-btn" onclick="toggleSidebar()">☰</div>
-        <div class="header-title">SRP SHOPPING</div>
+        <div class="nav-top">
+            <div class="logo">srp-shopping<span>.in</span></div>
+            <div id="user-display" style="color:white; font-size:12px; margin-left:auto;">Hello, User</div>
+        </div>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search SRP Shopping" onkeyup="filterItems()">
+            <button class="search-btn">🔍</button>
+        </div>
     </header>
 
-    <section id="home-sec" class="section active">
-        <div class="grid" id="product-display"></div>
-    </section>
-
-    <section id="rishi-sec" class="section">
-        <h3>🤖 Rishi Assistant</h3>
-        <div id="chat-window"></div>
-        <div style="display:flex; gap:8px; margin-top:10px;">
-            <input type="text" id="chat-input" placeholder="Ask Rishi..." style="margin:0;">
-            <button class="btn btn-p" style="width:70px; margin:0;" onclick="askRishi()">Ask</button>
+    <main id="home-sec" class="section active-sec">
+        <div class="hero"></div>
+        <div class="cats">
+            <div class="cat-item"><img src="https://m.media-amazon.com/images/I/41-l8Wq3VXL.jpg">Mobile</div>
+            <div class="cat-item"><img src="https://m.media-amazon.com/images/I/71Xm06F6SLL.jpg">Fashion</div>
+            <div class="cat-item"><img src="https://m.media-amazon.com/images/I/81vYv-hA9OL.jpg">Home</div>
+            <div class="cat-item"><img src="https://m.media-amazon.com/images/I/41-l8Wq3VXL.jpg">Kitchen</div>
+            <div class="cat-item"><img src="https://m.media-amazon.com/images/I/51H-iP8qY8L.jpg">Beauty</div>
         </div>
-    </section>
+        <div class="grid" id="p-grid"></div>
+    </main>
 
     <section id="wallet-sec" class="section">
-        <center>
-            <h3>My Wallet</h3>
-            <div style="background:var(--amz-navy); padding:40px; border-radius:15px; margin:20px 0;">
-                <h1 id="wallet-balance">₹0.00</h1>
-                <p style="color:#ccc;">Available UPI Balance</p>
-            </div>
-            <input type="number" id="add-amt" placeholder="Enter Amount (₹)">
-            <button class="btn btn-s" onclick="addMoney()">Add Money via UPI</button>
-        </center>
-    </section>
-
-    <section id="you-sec" class="section">
-        <h3>My Account</h3>
-        <div style="background:#fff; color:#111; border-radius:8px; padding:15px;">
-            <p id="active-user-text" style="font-weight:bold; margin-top:0;"></p>
-            <div style="border-top:1px solid #eee; padding:12px 0;" onclick="showInfo('about')">ℹ️ About SRP SHOPPING</div>
-            <div style="border-top:1px solid #eee; padding:12px 0;" onclick="showInfo('privacy')">🛡️ Privacy Policy</div>
-            <div id="info-display" style="display:none; padding:10px; background:#f9f9f9; font-size:13px; border-radius:5px; margin-top:10px; border:1px solid #ddd;"></div>
+        <div class="wallet-card">
+            <p>Amazon Pay Balance</p>
+            <h1 id="balance-txt">₹0.00</h1>
         </div>
+        <input type="number" id="add-amt" placeholder="Add Balance (₹)">
+        <button class="btn-amz" onclick="addMoney()">Add via UPI</button>
     </section>
 
     <section id="admin-sec" class="section">
-        <h3>Admin Dashboard</h3>
-        <div style="background:#fff; color:#111; padding:20px; border-radius:8px;">
-            <h4>Upload New Item</h4>
-            <input type="text" id="p-title" placeholder="Item Name">
-            <input type="number" id="p-mrp" placeholder="MRP (₹)">
-            <input type="number" id="p-price" placeholder="Sale Price (₹)">
+        <div style="background:#fff; padding:15px; border-radius:5px;">
+            <h3>Admin Dashboard</h3>
+            <input type="text" id="p-name" placeholder="Product Name">
+            <input type="number" id="p-mrp" placeholder="MRP">
+            <input type="number" id="p-price" placeholder="Sale Price">
             <input type="file" id="p-file" accept="image/*">
-            <button id="up-btn" class="btn btn-p" onclick="publishItem()">Add to Shopping</button>
+            <button class="btn-amz" id="up-btn" onclick="publishItem()">Add Product to Live Store</button>
             <hr>
-            <h4>Customer Orders</h4>
-            <div id="admin-orders-list"></div>
+            <div id="orders-list" style="color:#000;"></div>
         </div>
     </section>
 
     <nav>
-        <div class="nav-item active-link" onclick="switchSec('home')">🏠<br>Home</div>
-        <div class="nav-item" onclick="switchSec('rishi')">🤖<br>Rishi</div>
-        <div class="nav-item" onclick="switchSec('wallet')">💳<br>Wallet</div>
-        <div class="nav-item" onclick="switchSec('you')">👤<br>You</div>
+        <div class="nav-link" onclick="showSec('home')">🏠<br>Home</div>
+        <div class="nav-link" onclick="showSec('wallet')">💳<br>Pay</div>
+        <div class="nav-link" onclick="toggleAdmin()">⚙️<br>Admin</div>
+        <div class="nav-link" onclick="logout()">👤<br>Logout</div>
     </nav>
 </div>
 
-<div id="pay-overlay" style="display:none; position:fixed; inset:0; background:#fff; z-index:20000; padding:25px; color:#111; text-align:center;">
-    <h2>Confirm UPI Payment</h2>
-    <div id="pay-summary" style="margin-bottom:15px; font-weight:bold; color:var(--amz-navy);"></div>
-    <div id="pay-qr" style="margin-bottom:15px;"></div>
-    <button class="btn btn-p" onclick="confirmPayment()">I Have Paid via UPI</button>
-    <button class="btn" onclick="closePay()" style="background:#eee;">Cancel</button>
-</div>
-
 <script>
+    // --- FIREBASE CONFIG ---
     const firebaseConfig = {
         apiKey: "AIzaSyChyu_nVnU-ewwXkpYOPqhwn6WPV7J6UM",
         authDomain: "srp-sketch.firebaseapp.com",
@@ -155,99 +154,111 @@
         projectId: "srp-sketch",
         storageBucket: "srp-sketch.firebasestorage.app",
         messagingSenderId: "1094431391415",
-        appId: "1:1094431391415:web:6ef0bcd2841373e20fd732",
-        measurementId: "G-F67X6LWS7P"
+        appId: "1:1094431391415:web:6ef0bcd2841373e20fd732"
     };
 
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
     const auth = firebase.auth();
+    const db = firebase.database();
 
+    // --- AUTH LOGIC ---
     function loginWithGoogle() {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        auth.signInWithPopup(provider).then((res) => {
+        auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).then(res => {
             saveUser(res.user.email);
-        }).catch(err => alert(err.message));
+        });
+    }
+
+    function handleLogin() {
+        const e = document.getElementById('u-email').value;
+        if(e.includes('@')) saveUser(e);
+        else alert("Invalid Gmail");
     }
 
     function saveUser(email) {
-        localStorage.setItem('srp_logged_user', email);
+        localStorage.setItem('active_user', email);
         location.reload();
     }
 
-    function publishItem() {
-        const title = document.getElementById('p-title').value;
-        const mrp = document.getElementById('p-mrp').value;
-        const price = document.getElementById('p-price').value;
-        const file = document.getElementById('p-file').files[0];
-        const btn = document.getElementById('up-btn');
-        
-        if(!file || !title || !price || !mrp) return alert("Fill all details!");
-        btn.innerText = "Adding..."; btn.disabled = true;
+    function logout() { localStorage.removeItem('active_user'); location.reload(); }
 
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            db.ref('shopping').push({ title, mrp, price, img: reader.result, inStock: true })
-            .then(() => { alert("Item added to Shopping!"); location.reload(); });
-        };
-        reader.readAsDataURL(file);
+    // --- DATA SYNC ---
+    if(localStorage.getItem('active_user')) {
+        document.getElementById('auth-gate').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
+        document.getElementById('user-display').innerText = "Hello, " + localStorage.getItem('active_user').split('@')[0];
+        loadData();
     }
 
-    function loadProducts() {
+    function loadData() {
+        // Wallet Sync
+        const userKey = localStorage.getItem('active_user').replace(/[.$#[\]]/g, "_");
+        db.ref('wallets/' + userKey).on('value', snap => {
+            document.getElementById('balance-txt').innerText = "₹" + (snap.val() || 0).toLocaleString();
+        });
+
+        // Products Sync
         db.ref('shopping').on('value', snap => {
-            const grid = document.getElementById('product-display');
+            const grid = document.getElementById('p-grid');
             grid.innerHTML = "";
             snap.forEach(child => {
                 const p = child.val();
-                grid.innerHTML += `<div class="shopping-card">
-                    ${p.inStock ? '' : '<div class="oos-tag">OUT OF STOCK</div>'}
-                    <img src="${p.img}">
-                    <div style="font-weight:bold; margin-top:5px;">${p.title}</div>
-                    <div style="color:#B12704; font-weight:bold;">₹${p.price} <small style="text-decoration:line-through; color:#888;">₹${p.mrp}</small></div>
-                    <button class="btn btn-p" onclick="initBuy('${p.title}','${p.price}')">Buy Now</button>
-                </div>`;
+                grid.innerHTML += `
+                    <div class="card">
+                        <img src="${p.img}">
+                        <div class="card-info">
+                            <div class="card-title">${p.title}</div>
+                            <div class="card-price">₹${p.price} <span class="card-mrp">₹${p.mrp}</span></div>
+                            <button class="btn-amz" style="margin-top:10px" onclick="alert('Order Placed!')">Buy Now</button>
+                        </div>
+                    </div>`;
             });
         });
     }
 
-    function toggleSidebar() {
-        const side = document.getElementById('sidebar');
-        const over = document.getElementById('sidebar-overlay');
-        side.style.left = side.style.left === '0px' ? '-260px' : '0px';
-        over.style.display = over.style.display === 'block' ? 'none' : 'block';
+    function publishItem() {
+        const title = document.getElementById('p-name').value;
+        const mrp = document.getElementById('p-mrp').value;
+        const price = document.getElementById('p-price').value;
+        const file = document.getElementById('p-file').files[0];
+        const btn = document.getElementById('up-btn');
+
+        if(!file || !title) return alert("Missing Info");
+        btn.innerText = "Adding..."; btn.disabled = true;
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            db.ref('shopping').push({ title, mrp, price, img: reader.result }).then(() => {
+                alert("Added to Live Store!");
+                location.reload();
+            });
+        };
+        reader.readAsDataURL(file);
     }
 
-    function switchSec(id) {
-        if(id === 'admin' && prompt("Admin Code:") !== "SRP786") return;
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.getElementById(id + '-sec').classList.add('active');
-        toggleSidebar();
+    // --- NAV & UI ---
+    function showSec(id) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active-sec'));
+        document.getElementById(id + '-sec').classList.add('active-sec');
     }
 
-    if(localStorage.getItem('srp_logged_user')) {
-        document.getElementById('auth-gate').style.display = 'none';
-        document.getElementById('main-app').style.display = 'block';
-        document.getElementById('active-user-text').innerText = "User: " + localStorage.getItem('srp_logged_user');
-        loadProducts();
+    function toggleAdmin() {
+        if(prompt("Admin Access Code:") === "SRP786") showSec('admin');
     }
 
-    function logout() { localStorage.removeItem('srp_logged_user'); location.reload(); }
-    function handleLogin() {
-        const email = document.getElementById('u-email').value;
-        if(email.includes('@gmail.com')) saveUser(email);
-        else alert("Use a valid Gmail address!");
+    function filterItems() {
+        let q = document.getElementById('searchInput').value.toLowerCase();
+        document.querySelectorAll('.card').forEach(c => {
+            c.style.display = c.innerText.toLowerCase().includes(q) ? "" : "none";
+        });
     }
 
-    function initBuy(t, p) {
-        window.pending_order = { t, p };
-        const qr = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=upi://pay?pa=subhashrajpurohit406@okaxis&am=${p}&cu=INR&pn=SRP_SHOPPING`;
-        document.getElementById('pay-summary').innerText = `Buying: ${t} - ₹${p}`;
-        document.getElementById('pay-qr').innerHTML = `<img src="${qr}">`;
-        document.getElementById('pay-overlay').style.display = 'block';
+    function addMoney() {
+        const amt = parseInt(document.getElementById('add-amt').value);
+        if(!amt) return;
+        const userKey = localStorage.getItem('active_user').replace(/[.$#[\]]/g, "_");
+        db.ref('wallets/' + userKey).transaction(curr => (curr || 0) + amt);
+        alert("Payment Sync Successful!");
     }
-
-    function closePay() { document.getElementById('pay-overlay').style.display = 'none'; }
-    function confirmPayment() { alert("Order Registered!"); closePay(); }
 </script>
 </body>
 </html>
