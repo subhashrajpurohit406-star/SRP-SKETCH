@@ -19,8 +19,12 @@
         .sec { display: none; padding: 15px; min-height: 80vh; }
         .active-sec { display: block !important; }
         .card { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        
+        /* Account Switching UI */
         .acc-chip { display: flex; align-items: center; background: #fff; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #ddd; }
         .acc-chip img { width: 35px; border-radius: 50%; margin-right: 12px; }
+        .switch-btn { margin-left: auto; background: var(--amz-orange); border: 1px solid #a88734; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+
         .admin-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 15px; }
         .tab-btn { background: #e7e9ec; border: 1px solid #adb1b8; padding: 8px; border-radius: 4px; font-size: 11px; cursor: pointer; }
         .tab-btn.active { background: var(--amz-light); color: white; }
@@ -30,6 +34,8 @@
         nav.bot-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid #ddd; padding: 10px 0; z-index: 9500; }
         .nav-link { text-align: center; font-size: 11px; flex: 1; cursor: pointer; color: #555; }
         .nav-link.active { color: #e77600; font-weight: bold; }
+        
+        /* Chat UI */
         #ai-bot { position: fixed; bottom: 80px; right: 20px; width: 50px; height: 50px; background: var(--amz-orange); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 10000; }
         .chat-win { position: fixed; bottom: 140px; right: 20px; width: 300px; height: 400px; background: white; border-radius: 10px; display: flex; flex-direction: column; box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 10000; border: 1px solid #ddd; }
     </style>
@@ -57,9 +63,10 @@
     </main>
 
     <section id="acc-sec" class="sec">
-        <h3>Switch Account</h3>
+        <h3>Manage Accounts</h3>
         <div id="manage-acc-list"></div>
-        <button class="amz-btn" style="background:#f0f2f2; margin-top:20px;" onclick="auth.signOut()">Logout Current Account</button>
+        <p style="font-size:12px; color:#666; margin-top:15px;">Note: Switching accounts will refresh the page to sync your wallet.</p>
+        <button class="amz-btn" style="background:#f0f2f2; margin-top:20px;" onclick="auth.signOut(); localStorage.removeItem('srp_current');">Logout Current</button>
     </section>
 
     <section id="wallet-sec" class="sec">
@@ -79,29 +86,30 @@
 
         <div id="a-prod" class="admin-sub">
             <div class="card">
-                <input id="p-name" placeholder="Name">
-                <input id="p-mrp" type="number" placeholder="MRP">
-                <input id="p-disc" type="number" placeholder="Discount Price">
-                <input id="p-stock" type="number" placeholder="Stock">
-                <textarea id="p-desc" placeholder="Description"></textarea>
-                <input type="file" id="p-file" accept="image/*" onchange="hdlUpload()">
+                <input id="p-name" placeholder="Product Name">
+                <input id="p-mrp" type="number" placeholder="MRP Price">
+                <input id="p-disc" type="number" placeholder="Discounted Price">
+                <input id="p-stock" type="number" placeholder="Stock Quantity">
+                <textarea id="p-desc" placeholder="Product Description"></textarea>
+                <input type="file" id="p-file" accept="image/*">
                 <input type="hidden" id="p-url">
-                <button class="amz-btn" id="p-btn" onclick="saveProduct()">Publish</button>
+                <button class="amz-btn" id="p-btn" onclick="hdlUpload()">Step 1: Upload Image</button>
+                <button class="amz-btn" id="p-pub-btn" style="margin-top:10px; display:none;" onclick="saveProduct()">Step 2: Publish Product</button>
             </div>
         </div>
 
         <div id="a-recv" class="admin-sub hidden">
-            <h4>Customer Orders</h4>
+            <h4>Orders with Customer Details</h4>
             <div id="admin-recv-list"></div>
         </div>
 
         <div id="a-utr" class="admin-sub hidden"><div id="utr-requests"></div></div>
 
         <div id="a-info" class="admin-sub hidden">
-            <textarea id="in-about" placeholder="About Us..."></textarea>
-            <button class="amz-btn" onclick="updateInfo('about')">Save About</button>
-            <textarea id="in-policy" placeholder="Policy..."></textarea>
-            <button class="amz-btn" onclick="updateInfo('policy')">Save Policy</button>
+            <textarea id="in-about" placeholder="Edit About Us..."></textarea>
+            <button class="amz-btn" onclick="updateInfo('about')">Update About Us</button>
+            <textarea id="in-policy" placeholder="Edit Privacy Policy..."></textarea>
+            <button class="amz-btn" onclick="updateInfo('policy')">Update Policy</button>
         </div>
     </section>
 
@@ -114,9 +122,12 @@
 
 <div id="ai-bot" onclick="toggleChat()">🤖</div>
 <div id="chat-win" class="chat-win hidden">
-    <div style="background:var(--amz-navy); color:white; padding:10px;">SRP Expert AI</div>
-    <div id="chat-msgs" style="flex:1; padding:10px; overflow-y:auto;"></div>
-    <div style="display:flex;"><input id="chat-in" style="flex:1;"><button onclick="askAI()">Go</button></div>
+    <div style="background:var(--amz-navy); color:white; padding:10px; border-radius:10px 10px 0 0;">SRP Pro Smart AI</div>
+    <div id="chat-msgs" style="flex:1; padding:10px; overflow-y:auto; font-size:13px;"></div>
+    <div style="display:flex; border-top:1px solid #eee; padding:5px;">
+        <input id="chat-in" style="flex:1; border:none; outline:none;" placeholder="Ask something...">
+        <button onclick="askAI()" style="background:var(--amz-orange); border:none; padding:5px 10px; border-radius:3px; font-weight:bold;">Go</button>
+    </div>
 </div>
 
 <script>
@@ -133,15 +144,18 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth(), db = firebase.database(), storage = firebase.storage();
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
+// --- MULTI-ACCOUNT SYSTEM ---
 function syncAccounts() {
     const users = JSON.parse(localStorage.getItem('srp_users') || '[]');
     const list = document.getElementById('account-list');
     const manageList = document.getElementById('manage-acc-list');
     list.innerHTML = ""; manageList.innerHTML = "";
+    
     users.forEach(u => {
-        const chip = `<div class="acc-chip" onclick="switchAcc('${u.token}')">
-            <img src="${u.photo}"> <div><b>${u.name}</b><br><small>${u.email}</small></div>
-            <button style="margin-left:auto; border:none; background:var(--amz-orange); border-radius:4px; padding:5px;">Switch</button>
+        const chip = `<div class="acc-chip">
+            <img src="${u.photo}"> 
+            <div><b>${u.name}</b><br><small>${u.email}</small></div>
+            <button class="switch-btn" onclick="switchAcc('${u.email}')">Switch</button>
         </div>`;
         list.innerHTML += chip; manageList.innerHTML += chip;
     });
@@ -149,15 +163,20 @@ function syncAccounts() {
 
 async function loginNew() {
     const users = JSON.parse(localStorage.getItem('srp_users') || '[]');
-    if(users.length >= 3) return alert("Limit: 3 Accounts");
+    if(users.length >= 3) return alert("Limit: 3 Google Accounts reached.");
     const res = await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
-    const newUser = { email: res.user.email, name: res.user.displayName, photo: res.user.photoURL, token: res.user.uid };
+    const newUser = { email: res.user.email, name: res.user.displayName, photo: res.user.photoURL, uid: res.user.uid };
     if(!users.find(u => u.email === newUser.email)) users.push(newUser);
     localStorage.setItem('srp_users', JSON.stringify(users));
     location.reload();
 }
 
-function switchAcc(token) { location.reload(); }
+function switchAcc(email) {
+    alert("Switching to " + email);
+    // Note: Due to Firebase security, user must click 'Add' once per account, 
+    // but this UI helps track and trigger the session switch.
+    auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+}
 
 auth.onAuthStateChanged(user => {
     if (user) {
@@ -167,22 +186,33 @@ auth.onAuthStateChanged(user => {
     } else { syncAccounts(); }
 });
 
+// --- FIXED PRODUCT UPLOAD ---
 async function hdlUpload() {
     const file = document.getElementById('p-file').files[0];
+    if(!file) return alert("Please select an image first!");
     const btn = document.getElementById('p-btn');
-    btn.innerText = "UPLOADING..."; btn.disabled = true;
+    btn.innerText = "UPLOADING TO GALLERY..."; btn.disabled = true;
+
     try {
-        const ref = storage.ref('products/' + file.name + Date.now());
-        const snap = await ref.put(file);
-        const url = await snap.ref.getDownloadURL();
-        document.getElementById('p-url').value = url;
-        btn.innerText = "UPLOADED! PRESS PUBLISH"; btn.disabled = false;
-    } catch(e) { alert("Error! Enable Firebase Storage Rules"); btn.innerText = "RETRY UPLOAD"; btn.disabled = false; }
+        const ref = storage.ref('products/' + Date.now() + "_" + file.name);
+        const task = ref.put(file);
+        
+        task.on('state_changed', 
+            (snapshot) => { /* Progress can be added here if needed */ },
+            (error) => { alert("Upload Failed! Check Firebase Storage Rules."); btn.disabled = false; btn.innerText = "Retry Upload"; },
+            async () => {
+                const url = await task.snapshot.ref.getDownloadURL();
+                document.getElementById('p-url').value = url;
+                btn.style.display = 'none';
+                document.getElementById('p-pub-btn').style.display = 'block';
+                alert("Image Stored Successfully!");
+            }
+        );
+    } catch(e) { console.error(e); }
 }
 
 function saveProduct() {
     const url = document.getElementById('p-url').value;
-    if(!url) return alert("Upload image first!");
     db.ref('products').push({
         name: document.getElementById('p-name').value,
         mrp: document.getElementById('p-mrp').value,
@@ -191,29 +221,31 @@ function saveProduct() {
         desc: document.getElementById('p-desc').value,
         img: url
     });
-    alert("Product Live!");
+    alert("Product is now live!");
+    location.reload();
 }
 
+// --- ORDERS RECEIVED (FULL DETAILS) ---
 function buy(id, price, stock, name) {
-    const zip = prompt("Enter Zipcode:"), addr = prompt("Enter Full Address:"), phone = prompt("Enter Mobile No:");
-    if(!zip || !addr || !phone) return alert("All details required!");
-    
+    const ph = prompt("Mobile No:"), pin = prompt("Zipcode:"), addr = prompt("Full Address:");
+    if(!ph || !pin || !addr) return alert("All details are required to deliver!");
+
     db.ref('wallets/'+auth.currentUser.uid).once('value', s => {
         const bal = s.val()?.balance || 0;
         if(bal >= price) {
             db.ref('wallets/'+auth.currentUser.uid).update({ balance: bal - price });
             db.ref('products/'+id).update({ stock: stock - 1 });
             db.ref('orders_received').push({
-                customer: auth.currentUser.displayName,
-                email: auth.currentUser.email,
-                product: name,
-                zip: zip,
+                cust_name: auth.currentUser.displayName,
+                cust_email: auth.currentUser.email,
+                phone: ph,
+                zip: pin,
                 address: addr,
-                phone: phone,
+                item: name,
                 status: 'Paid'
             });
-            alert("Order Success!");
-        } else { alert("Low Balance!"); nav('wallet'); }
+            alert("Order Successful!");
+        } else { alert("Insufficient Balance!"); nav('wallet'); }
     });
 }
 
@@ -222,57 +254,73 @@ function syncAdminOrders() {
         const d = document.getElementById('admin-recv-list'); d.innerHTML = "";
         s.forEach(o => {
             const v = o.val();
-            d.innerHTML += `<div class="card" style="font-size:11px;">
-                <b>Name:</b> ${v.customer}<br><b>Phone:</b> ${v.phone}<br>
-                <b>Email:</b> ${v.email}<br><b>Product:</b> ${v.product}<br>
-                <b>Address:</b> ${v.address}, ${v.zip}
+            d.innerHTML += `<div class="card" style="font-size:11px; line-height:1.6;">
+                <b style="color:blue">PRODUCT: ${v.item}</b><br>
+                <b>Customer:</b> ${v.cust_name}<br>
+                <b>Email:</b> ${v.cust_email}<br>
+                <b>Contact:</b> ${v.phone}<br>
+                <b>Address:</b> ${v.address}, PIN: ${v.zip}<br>
+                <span style="color:green; font-weight:bold;">Status: ${v.status}</span>
             </div>`;
         });
     });
 }
 
-// FULLY TRAINED AI
+// --- FULLY TRAINED AI ---
 const aiKnowledge = {
-    "hello": "Hello! Welcome to SRP Pro Support. I am your specialized AI assistant.",
-    "payment": "Payments are secured via UPI and verified manually by Subhash Sir.",
-    "utr": "Enter your 12-digit UTR in the wallet section. Approval takes 10-30 minutes.",
-    "return": "We have a 7-day easy return policy on all electronics.",
-    "owner": "SRP Pro is owned and operated by Subhash Rajpurohit.",
-    "discount": "Check the home page for products with up to 50% discount!",
-    "shipping": "We ship via BlueDart. Delivery usually takes 3 to 5 business days."
+    "hello": "Hello! I am your SRP Pro Smart Assistant. How can I help you today?",
+    "hi": "Hi there! Welcome to the store. Need help with products or wallet?",
+    "how to buy": "1. Add money to your wallet via UPI. 2. Go to Home. 3. Click 'Order Now' and provide your address.",
+    "wallet": "Your wallet allows instant purchases. You can top it up using any UPI app like GPay or PhonePe.",
+    "utr": "A UTR is a 12-digit number found in your payment receipt. Enter it after paying to get balance.",
+    "approval": "Admin checks UTR requests every 10-20 minutes. Please be patient.",
+    "delivery": "We deliver nationwide! Standard shipping takes 3-5 business days.",
+    "contact": "You can reach Subhash Rajpurohit at subhashrajpurohit406@okaxis for support.",
+    "refund": "Refunds are processed to your wallet within 24 hours of cancellation.",
+    "about": "SRP Pro is a premium marketplace for quality products managed by Subhash Rajpurohit."
 };
 
 function askAI() {
     const q = document.getElementById('chat-in').value.toLowerCase();
     const box = document.getElementById('chat-msgs');
-    box.innerHTML += `<div><b>You:</b> ${q}</div>`;
-    let res = "I'm sorry, I don't have that info. Please email srp-support@gmail.com";
+    box.innerHTML += `<div style="text-align:right; margin-bottom:10px;"><b>You:</b> ${q}</div>`;
+    
+    let res = "I am still learning about that. Please contact support at subhashrajpurohit406@okaxis.";
     for(let k in aiKnowledge) { if(q.includes(k)) res = aiKnowledge[k]; }
-    setTimeout(()=> { box.innerHTML += `<div style="color:#007185"><b>AI:</b> ${res}</div>`; }, 400);
+    
+    setTimeout(() => { 
+        box.innerHTML += `<div style="color:#007185; margin-bottom:10px;"><b>AI:</b> ${res}</div>`; 
+        box.scrollTop = box.scrollHeight;
+    }, 500);
+    document.getElementById('chat-in').value = "";
 }
 
+// --- APP INITIALIZATION ---
 function initApp() {
     db.ref('products').on('value', s => {
         const f = document.getElementById('product-feed'); f.innerHTML = "";
         s.forEach(p => {
             const v = p.val();
             f.innerHTML += `<div class="card">
-                <img src="${v.img}" style="width:100%; height:110px; object-fit:contain;">
-                <div style="font-size:12px; font-weight:bold;">${v.name}</div>
-                <div style="font-size:10px; color:#555;">${v.desc}</div>
-                <small><del>₹${v.mrp}</del></small> <b style="color:#B12704">₹${v.price}</b>
-                <button class="amz-btn" style="padding:5px; margin-top:5px;" onclick="buy('${p.key}',${v.price},${v.stock},'${v.name}')">Order Now</button>
+                <img src="${v.img}" style="width:100%; height:110px; object-fit:contain; border-radius:5px;">
+                <div style="font-size:12px; font-weight:bold; margin-top:5px;">${v.name}</div>
+                <div style="font-size:10px; color:#666; height:30px; overflow:hidden;">${v.desc}</div>
+                <div style="margin-top:5px;"><small><del>₹${v.mrp}</del></small> <b style="color:#B12704">₹${v.price}</b></div>
+                <button class="amz-btn" style="padding:5px; font-size:11px; margin-top:5px;" onclick="buy('${p.key}',${v.price},${v.stock},'${v.name}')">Order Now</button>
             </div>`;
         });
     });
     db.ref('store').on('value', s => {
-        const v = s.val() || { about: "...", policy: "..." };
+        const v = s.val() || { about: "Welcome to SRP Store.", policy: "Shop with confidence." };
         document.getElementById('h-about').innerText = v.about;
         document.getElementById('h-policy').innerText = v.policy;
+        document.getElementById('in-about').value = v.about;
+        document.getElementById('in-policy').value = v.policy;
     });
     db.ref('wallets/'+auth.currentUser.uid).on('value', s => {
-        document.getElementById('wall-display').innerText = "₹" + (s.val()?.balance || 0);
-        document.getElementById('wall-bal').innerText = "₹" + (s.val()?.balance || 0);
+        const b = s.val()?.balance || 0;
+        document.getElementById('wall-display').innerText = "₹" + b;
+        document.getElementById('wall-bal').innerText = "₹" + b;
     });
     syncAccounts();
 }
@@ -281,7 +329,7 @@ function nav(id, el) {
     document.querySelectorAll('.sec').forEach(s => s.classList.remove('active-sec'));
     document.getElementById(id + '-sec').classList.add('active-sec');
     document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-    if(el) el.classList.add('active');
+    el.classList.add('active');
 }
 function atab(id, el) {
     document.querySelectorAll('.admin-sub').forEach(s => s.classList.add('hidden'));
@@ -291,14 +339,14 @@ function atab(id, el) {
     if(id === 'a-recv') syncAdminOrders();
 }
 function openTopUp() {
-    const amt = prompt("Amount?"); if(!amt) return;
-    const utr = prompt("Enter UTR after paying to subhashrajpurohit406@okaxis:");
+    const amt = prompt("Amount to add:"); if(!amt) return;
+    const utr = prompt("Enter 12-digit UTR after paying to subhashrajpurohit406@okaxis:");
     if(utr?.length === 12) db.ref('utr_requests/'+utr).set({ uid: auth.currentUser.uid, email: auth.currentUser.email, amt: parseInt(amt), status: 'pending' });
-    alert("UTR Submitted!");
+    alert("UTR Submitted for verification!");
 }
-function updateInfo(t) { db.ref('store/'+t).set(document.getElementById('in-'+t).value); alert("Saved"); }
+function updateInfo(t) { db.ref('store/'+t).set(document.getElementById('in-'+t).value); alert("Updated Successfully"); }
 function toggleChat() { document.getElementById('chat-win').classList.toggle('hidden'); }
-function checkAdmin() { if(prompt("Pin:")==="406") nav('admin'); }
+function checkAdmin() { if(prompt("Enter Admin Pin:")==="406") nav('admin'); }
 </script>
 </body>
 </html>
