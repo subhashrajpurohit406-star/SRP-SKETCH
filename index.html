@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SRP SKETCH | Official Gallery</title>
+    <title>SRP SHOPPING | Official Store</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
@@ -12,7 +12,6 @@
         :root { --amz-navy: #232f3e; --amz-orange: #febd69; --bg: #131921; --card: #ffffff; }
         body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: white; padding-bottom: 75px; }
         
-        /* Header & Sidebar */
         header { background: var(--amz-navy); padding: 15px; border-bottom: 2px solid var(--amz-orange); position: sticky; top:0; z-index: 1000; display: flex; align-items: center; }
         .menu-btn { font-size: 26px; cursor: pointer; color: var(--amz-orange); margin-right: 15px; }
         .header-title { color: var(--amz-orange); font-weight: bold; font-size: 20px; flex-grow: 1; text-align: center; margin-right: 40px; }
@@ -21,53 +20,55 @@
         #sidebar a { padding: 15px 25px; text-decoration: none; font-size: 16px; color: white; display: block; border-bottom: 1px solid #333; }
         #sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1500; }
 
-        /* App Sections */
         .section { display: none; padding: 15px; animation: fadeIn 0.3s ease; }
         .active { display: block !important; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
-        /* Store UI */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 5px; }
-        .sketch-card { background: #fff; color: #111; padding: 10px; border-radius: 8px; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        .sketch-card img { width: 100%; height: 160px; object-fit: cover; border-radius: 4px; }
+        .shopping-card { background: #fff; color: #111; padding: 10px; border-radius: 8px; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .shopping-card img { width: 100%; height: 160px; object-fit: cover; border-radius: 4px; }
         .oos-tag { position: absolute; top: 10px; left: 10px; background: red; color: white; padding: 2px 8px; font-size: 10px; font-weight: bold; border-radius: 3px; }
 
-        /* Inputs & Buttons */
         .btn { width: 100%; padding: 12px; border-radius: 25px; border: none; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 14px; }
         .btn-p { background: #ffa41c; border: 1px solid #ff8f00; }
         .btn-s { background: #ffd814; border: 1px solid #fcd200; }
         input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
 
-        /* Auth Gate */
-        #auth-gate { position: fixed; inset: 0; background: #fff; color: #111; z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .auth-box { width: 85%; max-width: 380px; border: 1px solid #ddd; padding: 30px; border-radius: 12px; text-align: center; }
+        /* Amazon-Style Auth Gate */
+        #auth-gate { position: fixed; inset: 0; background: #fff; color: #111; z-index: 9999; display: flex; flex-direction: column; align-items: center; padding-top: 40px; }
+        .auth-box { width: 90%; max-width: 350px; border: 1px solid #ddd; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .google-btn { background: white; color: #555; border: 1px solid #888; display: flex; align-items: center; justify-content: center; gap: 10px; border-radius: 4px; padding: 10px; cursor: pointer; font-weight: 500; width: 100%; margin-top: 15px; }
 
-        /* Bottom Nav */
         nav { position: fixed; bottom: 0; width: 100%; background: var(--amz-navy); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #3a4553; z-index: 5000; }
         .nav-item { text-align: center; font-size: 11px; color: #ccc; cursor: pointer; }
         .nav-item.active-link { color: var(--amz-orange); font-weight: bold; }
         
         #chat-window { height: 250px; background: #000; overflow-y: auto; padding: 15px; border-radius: 8px; border: 1px solid #333; }
-        .manage-item { background: #f9f9f9; padding: 10px; margin-bottom: 8px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; color: #111; border: 1px solid #ddd; font-size: 12px; }
         .order-card { background: #f1f1f1; color: #111; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid var(--amz-orange); font-size: 12px; }
     </style>
 </head>
 <body>
 
 <div id="auth-gate">
+    <div style="font-size: 28px; font-weight: bold; margin-bottom: 20px; color: #111;">SRP SHOPPING</div>
     <div class="auth-box">
-        <h1 style="color:var(--amz-navy); margin-top:0;">SRP SKETCH</h1>
-        <button class="btn btn-p" onclick="loginWithGoogle()">Continue with Google</button>
-        <p style="margin: 15px 0; font-size: 14px; color: #888;">OR</p>
-        <input type="email" id="u-email" placeholder="Gmail Address">
-        <input type="password" id="u-pass" placeholder="Password (min 6 chars)">
+        <h2 style="margin: 0 0 15px 0; font-size: 22px;">Sign-In</h2>
+        <input type="email" id="u-email" placeholder="Email (Gmail)">
+        <input type="password" id="u-pass" placeholder="Password">
         <button class="btn btn-p" onclick="handleLogin()">Sign-In</button>
+        <p style="font-size: 12px; color: #555; margin-top: 15px;">By continuing, you agree to SRP SHOPPING's Conditions of Use and Privacy Notice.</p>
+    </div>
+    <div style="width: 90%; max-width: 350px; text-align: center; margin-top: 20px;">
+        <p style="color: #777; font-size: 12px; border-bottom: 1px solid #ddd; line-height: 0.1em; margin: 10px 0 20px;"><span style="background:#fff; padding:0 10px;">New to SRP SHOPPING?</span></p>
+        <button class="google-btn" onclick="loginWithGoogle()">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" width="18"> Sign in with Google
+        </button>
     </div>
 </div>
 
 <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
 <div id="sidebar">
-    <a href="#" onclick="switchSec('home')">🏠 Gallery Home</a>
+    <a href="#" onclick="switchSec('home')">🏠 Shopping Home</a>
     <a href="#" onclick="switchSec('wallet')">💳 Wallet Balance</a>
     <a href="#" onclick="switchSec('you')">👤 Account Settings</a>
     <a href="#" onclick="switchSec('admin')">⚙️ Admin Control</a>
@@ -77,7 +78,7 @@
 <div id="main-app" style="display:none;">
     <header>
         <div class="menu-btn" onclick="toggleSidebar()">☰</div>
-        <div class="header-title">SRP SKETCH</div>
+        <div class="header-title">SRP SHOPPING</div>
     </header>
 
     <section id="home-sec" class="section active">
@@ -85,7 +86,7 @@
     </section>
 
     <section id="rishi-sec" class="section">
-        <h3>🤖 Rishi AI Assistant</h3>
+        <h3>🤖 Rishi Assistant</h3>
         <div id="chat-window"></div>
         <div style="display:flex; gap:8px; margin-top:10px;">
             <input type="text" id="chat-input" placeholder="Ask Rishi..." style="margin:0;">
@@ -100,7 +101,7 @@
                 <h1 id="wallet-balance">₹0.00</h1>
                 <p style="color:#ccc;">Available UPI Balance</p>
             </div>
-            <input type="number" id="add-amt" placeholder="Enter Amount to Top-up (₹)">
+            <input type="number" id="add-amt" placeholder="Enter Amount (₹)">
             <button class="btn btn-s" onclick="addMoney()">Add Money via UPI</button>
         </center>
     </section>
@@ -109,12 +110,7 @@
         <h3>My Account</h3>
         <div style="background:#fff; color:#111; border-radius:8px; padding:15px;">
             <p id="active-user-text" style="font-weight:bold; margin-top:0;"></p>
-            <div style="border:1px solid #ddd; padding:10px; border-radius:5px; margin-bottom:15px;">
-                <p style="margin:0 0 10px 0; font-size:13px;">Manage Accounts (Switch Max 2):</p>
-                <div id="acc-list"></div>
-                <button class="btn btn-s" style="font-size:12px;" onclick="logout()">+ Switch/Add Account</button>
-            </div>
-            <div style="border-top:1px solid #eee; padding:12px 0;" onclick="showInfo('about')">ℹ️ About SRP STUDIO</div>
+            <div style="border-top:1px solid #eee; padding:12px 0;" onclick="showInfo('about')">ℹ️ About SRP SHOPPING</div>
             <div style="border-top:1px solid #eee; padding:12px 0;" onclick="showInfo('privacy')">🛡️ Privacy Policy</div>
             <div id="info-display" style="display:none; padding:10px; background:#f9f9f9; font-size:13px; border-radius:5px; margin-top:10px; border:1px solid #ddd;"></div>
         </div>
@@ -123,24 +119,15 @@
     <section id="admin-sec" class="section">
         <h3>Admin Dashboard</h3>
         <div style="background:#fff; color:#111; padding:20px; border-radius:8px;">
-            <h4>Upload New Sketch</h4>
-            <input type="text" id="p-title" placeholder="Title">
-            <input type="number" id="p-mrp" placeholder="Actual MRP (₹)">
-            <input type="number" id="p-price" placeholder="Discounted Sale Price (₹)">
+            <h4>Upload New Item</h4>
+            <input type="text" id="p-title" placeholder="Item Name">
+            <input type="number" id="p-mrp" placeholder="MRP (₹)">
+            <input type="number" id="p-price" placeholder="Sale Price (₹)">
             <input type="file" id="p-file" accept="image/*">
-            <button id="up-btn" class="btn btn-p" onclick="publishSketch()">Publish to Gallery</button>
+            <button id="up-btn" class="btn btn-p" onclick="publishItem()">Add to Shopping</button>
             <hr>
-            <h4>Manage Sketches (Delete/Stock)</h4>
-            <div id="admin-manage-list"></div>
-            <hr>
-            <h4>Customer Order History</h4>
+            <h4>Customer Orders</h4>
             <div id="admin-orders-list"></div>
-            <hr>
-            <h4>Update Legal Content</h4>
-            <textarea id="edit-about" placeholder="Update About Us..."></textarea>
-            <button class="btn btn-s" onclick="updateSiteData('about')">Save About Us</button>
-            <textarea id="edit-privacy" placeholder="Update Privacy Policy..."></textarea>
-            <button class="btn btn-s" onclick="updateSiteData('privacy')">Save Policy</button>
         </div>
     </section>
 
@@ -152,17 +139,15 @@
     </nav>
 </div>
 
-<div id="pay-overlay" style="display:none; position:fixed; inset:0; background:#fff; z-index:20000; padding:25px; color:#111; text-align:center; overflow-y:auto;">
+<div id="pay-overlay" style="display:none; position:fixed; inset:0; background:#fff; z-index:20000; padding:25px; color:#111; text-align:center;">
     <h2>Confirm UPI Payment</h2>
     <div id="pay-summary" style="margin-bottom:15px; font-weight:bold; color:var(--amz-navy);"></div>
     <div id="pay-qr" style="margin-bottom:15px;"></div>
-    <p style="font-size:13px;">Scan the QR and pay via any UPI app. Admin will verify your order once confirmed.</p>
     <button class="btn btn-p" onclick="confirmPayment()">I Have Paid via UPI</button>
     <button class="btn" onclick="closePay()" style="background:#eee;">Cancel</button>
 </div>
 
 <script>
-    // --- FIREBASE INITIALIZATION ---
     const firebaseConfig = {
         apiKey: "AIzaSyChyu_nVnU-ewwXkpYOPqhwn6WPV7J6UM",
         authDomain: "srp-sketch.firebaseapp.com",
@@ -178,65 +163,53 @@
     const db = firebase.database();
     const auth = firebase.auth();
 
-    // --- 1. GOOGLE LOGIN (REDIRECT MODE FOR MOBILE) ---
     function loginWithGoogle() {
         const provider = new firebase.auth.GoogleAuthProvider();
-        auth.signInWithRedirect(provider);
+        auth.signInWithPopup(provider).then((res) => {
+            saveUser(res.user.email);
+        }).catch(err => alert(err.message));
     }
 
-    auth.getRedirectResult().then((res) => {
-        if(res && res.user) saveUser(res.user.email);
-    });
-
     function saveUser(email) {
-        let list = JSON.parse(localStorage.getItem('srp_acc_list')) || [];
-        if(!list.includes(email)) {
-            if(list.length >= 2) list.shift(); // Max 2 accounts switcher
-            list.push(email);
-        }
-        localStorage.setItem('srp_acc_list', JSON.stringify(list));
         localStorage.setItem('srp_logged_user', email);
         location.reload();
     }
 
-    // --- 2. PERMANENT DATABASE SYNC ---
-    function publishSketch() {
+    function publishItem() {
         const title = document.getElementById('p-title').value;
         const mrp = document.getElementById('p-mrp').value;
         const price = document.getElementById('p-price').value;
         const file = document.getElementById('p-file').files[0];
         const btn = document.getElementById('up-btn');
         
-        if(!file || !title || !price || !mrp) return alert("Fill all details including MRP and Sale Price!");
-        btn.innerText = "Publishing... Do not close"; btn.disabled = true;
+        if(!file || !title || !price || !mrp) return alert("Fill all details!");
+        btn.innerText = "Adding..."; btn.disabled = true;
 
         const reader = new FileReader();
         reader.onloadend = () => {
-            db.ref('sketches').push({ title, mrp, price, img: reader.result, inStock: true })
-            .then(() => { alert("Sketch is now live permanently!"); location.reload(); })
-            .catch(err => alert("Sync Error: " + err.message));
+            db.ref('shopping').push({ title, mrp, price, img: reader.result, inStock: true })
+            .then(() => { alert("Item added to Shopping!"); location.reload(); });
         };
         reader.readAsDataURL(file);
     }
 
     function loadProducts() {
-        db.ref('sketches').on('value', snap => {
+        db.ref('shopping').on('value', snap => {
             const grid = document.getElementById('product-display');
             grid.innerHTML = "";
             snap.forEach(child => {
                 const p = child.val();
-                grid.innerHTML += `<div class="sketch-card ${p.inStock ? '' : 'out-of-stock'}">
+                grid.innerHTML += `<div class="shopping-card">
                     ${p.inStock ? '' : '<div class="oos-tag">OUT OF STOCK</div>'}
                     <img src="${p.img}">
-                    <div style="font-weight:bold; margin-top:5px; height:36px; overflow:hidden;">${p.title}</div>
-                    <div style="color:#B12704; font-weight:bold;">₹${p.price} <small style="text-decoration:line-through; color:#888; font-weight:normal;">₹${p.mrp}</small></div>
-                    <button class="btn btn-p" ${p.inStock ? '' : 'disabled'} onclick="initBuy('${p.title}','${p.price}')">Buy Now</button>
+                    <div style="font-weight:bold; margin-top:5px;">${p.title}</div>
+                    <div style="color:#B12704; font-weight:bold;">₹${p.price} <small style="text-decoration:line-through; color:#888;">₹${p.mrp}</small></div>
+                    <button class="btn btn-p" onclick="initBuy('${p.title}','${p.price}')">Buy Now</button>
                 </div>`;
             });
         });
     }
 
-    // --- 3. SIDEBAR & NAVIGATION LOGIC ---
     function toggleSidebar() {
         const side = document.getElementById('sidebar');
         const over = document.getElementById('sidebar-overlay');
@@ -245,125 +218,36 @@
     }
 
     function switchSec(id) {
-        if(id === 'admin') {
-            if(prompt("Enter Admin Security Code:") !== (localStorage.getItem('adm_p') || "SRP786")) return alert("Unauthorized");
-            renderAdminTools();
-        }
+        if(id === 'admin' && prompt("Admin Code:") !== "SRP786") return;
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.getElementById(id + '-sec').classList.add('active');
         toggleSidebar();
     }
 
-    // --- 4. WALLET & PAYMENTS ---
-    function updateWalletUI() {
-        const email = localStorage.getItem('srp_logged_user').replace(/[.$#[\]]/g, "_");
-        db.ref('wallets/' + email).on('value', snap => {
-            document.getElementById('wallet-balance').innerText = "₹" + (snap.val() || 0);
-        });
+    if(localStorage.getItem('srp_logged_user')) {
+        document.getElementById('auth-gate').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
+        document.getElementById('active-user-text').innerText = "User: " + localStorage.getItem('srp_logged_user');
+        loadProducts();
     }
 
-    function addMoney() {
-        const amt = document.getElementById('add-amt').value;
-        if(amt < 10) return alert("Min ₹10 Top-up");
-        window.pending_wallet = amt;
-        const qr = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=upi://pay?pa=subhashrajpurohit406@okaxis&am=${amt}&cu=INR&pn=SRP_STUDIO`;
-        document.getElementById('pay-summary').innerText = "Wallet Top-up: ₹" + amt;
-        document.getElementById('pay-qr').innerHTML = `<img src="${qr}">`;
-        document.getElementById('pay-overlay').style.display = 'block';
+    function logout() { localStorage.removeItem('srp_logged_user'); location.reload(); }
+    function handleLogin() {
+        const email = document.getElementById('u-email').value;
+        if(email.includes('@gmail.com')) saveUser(email);
+        else alert("Use a valid Gmail address!");
     }
 
     function initBuy(t, p) {
         window.pending_order = { t, p };
-        const qr = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=upi://pay?pa=subhashrajpurohit406@okaxis&am=${p}&cu=INR&pn=SRP_STUDIO`;
+        const qr = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=upi://pay?pa=subhashrajpurohit406@okaxis&am=${p}&cu=INR&pn=SRP_SHOPPING`;
         document.getElementById('pay-summary').innerText = `Buying: ${t} - ₹${p}`;
         document.getElementById('pay-qr').innerHTML = `<img src="${qr}">`;
         document.getElementById('pay-overlay').style.display = 'block';
     }
 
-    function confirmPayment() {
-        if(window.pending_wallet) {
-            const email = localStorage.getItem('srp_logged_user').replace(/[.$#[\]]/g, "_");
-            db.ref('wallets/' + email).transaction(curr => (curr || 0) + parseInt(window.pending_wallet));
-            alert("Wallet Refreshed! Pending Admin verification.");
-            window.pending_wallet = null;
-        } else if(window.pending_order) {
-            db.ref('orders').push({ 
-                item: window.pending_order.t, 
-                price: window.pending_order.p, 
-                user: localStorage.getItem('srp_logged_user'),
-                status: 'Payment Pending',
-                date: new Date().toLocaleString()
-            });
-            alert("Order Registered! status: Payment Pending");
-            window.pending_order = null;
-        }
-        closePay();
-    }
-
-    // --- 5. APP INITIALIZATION & YOU SECTION ---
-    if(localStorage.getItem('srp_logged_user')) {
-        document.getElementById('auth-gate').style.display = 'none';
-        document.getElementById('main-app').style.display = 'block';
-        document.getElementById('active-user-text').innerText = "Account: " + localStorage.getItem('srp_logged_user');
-        loadProducts();
-        updateWalletUI();
-    }
-
-    function logout() { localStorage.removeItem('srp_logged_user'); location.reload(); }
     function closePay() { document.getElementById('pay-overlay').style.display = 'none'; }
-    function handleLogin() {
-        const email = document.getElementById('u-email').value;
-        const pass = document.getElementById('u-pass').value;
-        if(email.includes('@gmail.com') && pass.length >= 6) saveUser(email);
-        else alert("Enter valid @gmail.com and 6-char password!");
-    }
-
-    function renderAdminTools() {
-        db.ref('sketches').on('value', snap => {
-            const list = document.getElementById('admin-manage-list');
-            list.innerHTML = "";
-            snap.forEach(child => {
-                const p = child.val();
-                list.innerHTML += `<div class="manage-item">
-                    <span>${p.title} (₹${p.price})</span>
-                    <div>
-                        <button onclick="db.ref('sketches/${child.key}').update({inStock:${!p.inStock}})">${p.inStock ? 'OOS' : 'STOCK'}</button>
-                        <button onclick="if(confirm('Delete permanently?')) db.ref('sketches/${child.key}').remove()" style="color:red">DEL</button>
-                    </div>
-                </div>`;
-            });
-        });
-        db.ref('orders').on('value', snap => {
-            const list = document.getElementById('admin-orders-list');
-            list.innerHTML = "";
-            snap.forEach(o => {
-                list.innerHTML += `<div class="order-card"><b>${o.val().item} (₹${o.val().price})</b><br>${o.val().user}<br>Status: ${o.val().status}</div>`;
-            });
-        });
-    }
-
-    function showInfo(type) {
-        const disp = document.getElementById('info-display');
-        disp.style.display = 'block';
-        db.ref('site_settings/' + type).once('value', snap => {
-            disp.innerHTML = `<b>${type.toUpperCase()}:</b><br>${snap.val() || 'Admin has not set this information yet.'}`;
-        });
-    }
-
-    function updateSiteData(type) {
-        db.ref('site_settings/' + type).set(document.getElementById('edit-' + type).value).then(() => alert("Updated!"));
-    }
-
-    function askRishi() {
-        const q = document.getElementById('chat-input').value.toLowerCase();
-        const win = document.getElementById('chat-window');
-        let ans = "I am Rishi. Ask me about sketch prices, stock, or UPI payments.";
-        if(q.includes("price")) ans = "Handmade charcoal sketches start from ₹1500. See our gallery for specific prices.";
-        if(q.includes("pay")) ans = "We only accept UPI payments. Once you click 'Buy Now', a secure QR code will appear.";
-        win.innerHTML += `<div>You: ${q}</div><div style="color:var(--amz-orange);">Rishi: ${ans}</div>`;
-        document.getElementById('chat-input').value = "";
-    }
+    function confirmPayment() { alert("Order Registered!"); closePay(); }
 </script>
 </body>
 </html>
-
