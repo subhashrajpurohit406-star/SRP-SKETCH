@@ -3,133 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SRP SHOPPING | Online Shopping India</title>
+    <title>SRP Pro Shopping</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
     <style>
-        :root { 
-            --amz-navy: #232f3e; 
-            --amz-light-navy: #37475a;
-            --amz-orange: #febd69; 
-            --amz-yellow: #ffd814;
-            --bg: #e3e6e6; 
-            --white: #ffffff;
-        }
-
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; font-family: 'Amazon Ember', Arial, sans-serif; background: var(--bg); color: #111; overflow-x: hidden; }
-
-        /* PROFESSIONAL AUTH GATE */
-        #auth-gate { position: fixed; inset: 0; background: var(--white); z-index: 10000; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
-        .auth-logo { font-size: 28px; font-weight: 800; color: #000; margin-bottom: 20px; }
-        .auth-logo span { color: var(--amz-orange); }
-        .auth-box { width: 90%; max-width: 350px; border: 1px solid #ddd; padding: 25px; border-radius: 8px; background: #fff; }
-        .auth-box h2 { margin: 0 0 15px; font-weight: 400; font-size: 28px; }
-        .auth-box label { font-size: 13px; font-weight: 700; display: block; margin-bottom: 5px; }
-        .auth-input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #a6a6a6; border-radius: 3px; font-size: 14px; outline-color: #e77600; }
+        :root { --navy: #232f3e; --orange: #febd69; --yellow: #ffd814; --bg: #f3f3f3; }
+        body { margin: 0; font-family: Arial, sans-serif; background: var(--bg); padding-bottom: 70px; }
         
-        /* PRO BUTTONS */
-        .btn-amz-gold { background: linear-gradient(to bottom, #f7dfa5, #f0c14b); border: 1px solid #a88734; border-radius: 3px; padding: 10px; width: 100%; cursor: pointer; font-size: 13px; }
-        .btn-amz-grey { background: linear-gradient(to bottom, #f7f8fa, #e7e9ec); border: 1px solid #adb1b8; border-radius: 3px; padding: 10px; width: 100%; margin-top: 15px; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        /* AUTHENTICATION */
+        #login-screen { position: fixed; inset: 0; background: #fff; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .btn-auth { background: var(--yellow); border: 1px solid #a88734; padding: 12px; width: 280px; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px; }
 
-        /* PRO HEADER */
-        header { background: var(--amz-navy); position: sticky; top: 0; z-index: 9000; }
-        .nav-main { display: flex; align-items: center; padding: 10px 15px; gap: 15px; }
-        .nav-dots { font-size: 24px; color: #fff; cursor: pointer; }
-        .nav-logo { color: #fff; font-size: 18px; font-weight: bold; flex-grow: 1; }
-        .nav-logo span { color: var(--amz-orange); }
-        .search-row { background: var(--amz-navy); padding: 0 10px 10px; }
-        .search-bar { background: #fff; display: flex; border-radius: 4px; overflow: hidden; height: 40px; }
-        .search-bar input { flex: 1; border: none; padding: 0 10px; outline: none; }
-        .search-btn { background: var(--amz-orange); border: none; width: 45px; cursor: pointer; }
-
-        /* APP PAGES */
-        .section { display: none; padding-bottom: 80px; }
-        .active-sec { display: block !important; }
+        /* NAV & HEADER */
+        header { background: var(--navy); padding: 10px 15px; display: flex; align-items: center; position: sticky; top: 0; z-index: 900; }
+        .logo { color: #fff; font-size: 20px; font-weight: bold; flex: 1; }
+        .dots { font-size: 24px; color: #fff; cursor: pointer; padding: 0 10px; }
 
         /* PRODUCT GRID */
-        .p-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
-        .p-card { background: #fff; border-radius: 4px; padding: 12px; display: flex; flex-direction: column; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .p-card img { width: 100%; height: 140px; object-fit: contain; }
-        .p-name { font-size: 14px; margin: 8px 0; height: 35px; overflow: hidden; }
-        .p-price-row { display: flex; align-items: baseline; gap: 5px; }
-        .p-price { font-size: 18px; font-weight: bold; }
-        .p-mrp { font-size: 12px; text-decoration: line-through; color: #565959; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
+        .card { background: #fff; padding: 10px; border-radius: 4px; box-shadow: 0 1px 2px #0002; }
+        .card img { width: 100%; height: 120px; object-fit: contain; }
+        .price { font-size: 18px; font-weight: bold; margin: 5px 0; }
+        .btn-buy { background: var(--orange); border: 1px solid #c45500; width: 100%; padding: 8px; border-radius: 3px; cursor: pointer; }
 
-        /* NAVIGATION BAR */
-        nav.bottom-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #ddd; z-index: 9500; }
-        .nav-link { text-align: center; color: #111; font-size: 11px; flex: 1; cursor: pointer; }
-        .nav-link.active { color: #e77600; font-weight: bold; }
+        /* SECTIONS */
+        .page { display: none; padding: 15px; }
+        .active { display: block !important; }
 
-        /* ACCOUNT MANAGER */
-        .acc-item { display: flex; justify-content: space-between; padding: 15px; background: #fff; border-bottom: 1px solid #eee; }
-        .acc-btn { color: #007185; font-weight: bold; cursor: pointer; font-size: 13px; }
+        /* BOTTOM NAV */
+        nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #ddd; }
+        .nav-item { font-size: 12px; text-align: center; cursor: pointer; color: #555; }
+        .nav-item.active { color: #e77600; font-weight: bold; }
+
+        /* OVERLAYS */
+        #checkout { position: fixed; inset: 0; background: #fff; z-index: 2000; padding: 20px; display: none; overflow-y: auto; }
+        input, textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 3px; }
     </style>
 </head>
 <body>
 
-<div id="auth-gate">
-    <div class="auth-logo">srp-shopping<span>.in</span></div>
-    <div class="auth-box">
-        <h2>Sign-In</h2>
-        <label>Email (phone for mobile accounts)</label>
-        <input type="email" id="auth-email" class="auth-input" placeholder="example@gmail.com">
-        <label>Password</label>
-        <input type="password" id="auth-pass" class="auth-input" placeholder="At least 6 characters">
-        <button class="btn-amz-gold" onclick="handleAuth()">Continue</button>
-        <p style="font-size: 12px; margin-top: 15px; color: #555;">By signing in, you agree to SRP SHOPPING's Conditions of Use.</p>
-    </div>
-    <div style="width: 90%; max-width: 350px; text-align: center; margin-top: 20px;">
-        <button class="btn-amz-grey" onclick="googleAuth()">
-            <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="18"> Continue with Google
-        </button>
-    </div>
+<div id="login-screen">
+    <h1 style="margin-bottom:30px;">SRP SHOPPING</h1>
+    <button class="btn-auth" onclick="googleLogin()">Continue with Google</button>
+    <button class="btn-auth" style="background:#eee; border-color:#ccc;" onclick="toggleEmailAuth()">Login with Email</button>
 </div>
 
-<div id="main-app" style="display:none;">
-    <header>
-        <div class="nav-main">
-            <div class="nav-dots" onclick="openAdminMenu()">⋮</div>
-            <div class="nav-logo">srp-shopping<span>.in</span></div>
-            <div id="user-info" style="color:white; font-size:12px;">Hello, User</div>
-        </div>
-        <div class="search-row">
-            <div class="search-bar">
-                <input type="text" id="store-search" placeholder="Search SRP Shopping" onkeyup="searchStore()">
-                <button class="search-btn">🔍</button>
-            </div>
-        </div>
-    </header>
+<header id="main-header" style="display:none;">
+    <div class="dots" onclick="adminAccess()">⋮</div>
+    <div class="logo">SRP<span>.in</span></div>
+    <div id="user-display" style="color:#fff; font-size:12px;">Hello</div>
+</header>
 
-    <main id="home-sec" class="section active-sec">
-        <div style="height:150px; background: linear-gradient(to bottom, var(--amz-navy), transparent); margin-bottom:-50px;"></div>
-        <div id="product-container" class="p-grid"></div>
-    </main>
-
-    <section id="you-sec" class="section">
-        <div style="padding:15px;">
-            <h3>Your Accounts (Max 3)</h3>
-            <div id="acc-list" style="border: 1px solid #ddd; border-radius: 8px; overflow: hidden;"></div>
-            <button class="btn-amz-grey" style="width:auto; padding:5px 15px;" onclick="addAnotherAccount()">+ Add New Account</button>
-        </div>
-        <div style="padding:15px; background: #fff; margin-top: 10px;">
-            <div onclick="toggleLegal('about')" style="padding:15px 0; border-bottom:1px solid #eee;">About Us <span style="float:right">Edit</span></div>
-            <div onclick="toggleLegal('privacy')" style="padding:15px 0;">Privacy Policy <span style="float:right">Edit</span></div>
-        </div>
-    </section>
-
-    <nav class="bottom-nav">
-        <div class="nav-link active" onclick="showSec('home')">🏠<br>Home</div>
-        <div class="nav-link" onclick="showSec('ai')">🤖<br>Rishi AI</div>
-        <div class="nav-link" onclick="showSec('wallet')">💳<br>Wallet</div>
-        <div class="nav-link" onclick="showSec('you')">👤<br>You</div>
-    </nav>
+<div id="home-page" class="page active">
+    <div id="store-grid" class="grid"></div>
 </div>
+
+<div id="ai-page" class="page">
+    <h3>🤖 Rishi AI Assistant</h3>
+    <div id="chat" style="height:300px; background:#fff; overflow-y:auto; padding:10px; border:1px solid #ddd; margin-bottom:10px;"></div>
+    <input type="text" id="ai-in" placeholder="Ask Rishi..."><button onclick="askRishi()">Ask</button>
+</div>
+
+<div id="wallet-page" class="page">
+    <div style="background:var(--navy); color:#fff; padding:30px; border-radius:10px; text-align:center;">
+        <p>Wallet Balance</p>
+        <h1 id="wall-bal">₹0.00</h1>
+    </div>
+    <button class="btn-buy" style="margin-top:20px;" onclick="addFunds()">Add Money via UPI</button>
+</div>
+
+<div id="you-page" class="page">
+    <div style="background:#fff; padding:15px; border-radius:5px;">
+        <h3>Manage Accounts (Max 3)</h3>
+        <div id="acc-list"></div>
+        <button onclick="switchAccount()" style="margin-top:10px;">+ Switch/Add Account</button>
+    </div>
+    <hr>
+    <div onclick="alert('Blogger Privacy Policy Loading...')">Privacy Policy</div>
+</div>
+
+<div id="checkout">
+    <h2>Secure Checkout</h2>
+    <div id="steps">
+        <input type="text" id="f-name" placeholder="Full Name">
+        <input type="text" id="f-phone" placeholder="Phone Number">
+        <input type="text" id="f-pin" placeholder="Pincode">
+        <textarea id="f-addr" placeholder="Address"></textarea>
+        <button class="btn-buy" onclick="showPayment()">Proceed to Payment</button>
+    </div>
+    <div id="pay-step" style="display:none; text-align:center;">
+        <p>Pay <b>subhashrajpurohit406@oksbi</b></p>
+        <div id="qr"></div>
+        <button class="btn-buy" onclick="finishOrder()">I Have Paid</button>
+    </div>
+    <button onclick="document.getElementById('checkout').style.display='none'" style="margin-top:10px; border:none; background:none; color:red;">Cancel</button>
+</div>
+
+<nav id="bottom-nav" style="display:none;">
+    <div class="nav-item active" onclick="navTo('home')">🏠<br>Home</div>
+    <div class="nav-item" onclick="navTo('ai')">🤖<br>AI</div>
+    <div class="nav-item" onclick="navTo('wallet')">💳<br>Wallet</div>
+    <div class="nav-item" onclick="navTo('you')">👤<br>You</div>
+</nav>
 
 <script>
-    // --- YOUR EXACT FIREBASE CONFIG ---
     const firebaseConfig = {
         apiKey: "AIzaSyCHyu_nVnU-ewwXkpYOPqhwN64WPV7J6UM",
         authDomain: "srp-sketch.firebaseapp.com",
@@ -137,200 +116,93 @@
         projectId: "srp-sketch",
         storageBucket: "srp-sketch.firebasestorage.app",
         messagingSenderId: "1094431391415",
-        appId: "1:1094431391415:web:6ef0bcd2841373e20fd732",
-        measurementId: "G-F67X6LWS7P"
+        appId: "1:1094431391415:web:6ef0bcd2841373e20fd732"
     };
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
 
-    // --- AUTHENTICATION ENGINE ---
+    // 1. REFRESH PERSISTENCE
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
     auth.onAuthStateChanged(user => {
         if (user) {
-            document.getElementById('auth-gate').style.display = 'none';
-            document.getElementById('main-app').style.display = 'block';
-            document.getElementById('user-info').innerText = "Hello, " + (user.displayName || user.email.split('@')[0]);
-            manageSession(user.email);
-            loadStore();
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-header').style.display = 'flex';
+            document.getElementById('bottom-nav').style.display = 'flex';
+            document.getElementById('user-display').innerText = "Hello, " + (user.displayName || "Member");
+            syncData();
         } else {
-            document.getElementById('auth-gate').style.display = 'flex';
+            document.getElementById('login-screen').style.display = 'flex';
         }
     });
 
-    function handleAuth() {
-        const e = document.getElementById('auth-email').value;
-        const p = document.getElementById('auth-pass').value;
-        auth.signInWithEmailAndPassword(e, p).catch(err => alert(err.message));
-    }
+    function googleLogin() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
 
-    function googleAuth() {
-        auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
-    }
-
-    function manageSession(email) {
-        let accs = JSON.parse(localStorage.getItem('srp_sessions')) || [];
-        if(!accs.includes(email)) {
-            if(accs.length >= 3) accs.shift();
-            accs.push(email);
-        }
-        localStorage.setItem('srp_sessions', JSON.stringify(accs));
-        renderAccounts();
-    }
-
-    function renderAccounts() {
-        const accs = JSON.parse(localStorage.getItem('srp_sessions')) || [];
-        const container = document.getElementById('acc-list');
-        container.innerHTML = "";
-        accs.forEach(email => {
-            container.innerHTML += `<div class="acc-item"><span>${email}</span><span class="acc-btn" onclick="switchAccount('${email}')">Switch</span></div>`;
-        });
-    }
-
-    function switchAccount(email) {
-        alert("Switching to " + email);
-        auth.signOut();
-    }
-</script>
-    <script>
-    // --- NAVIGATION ENGINE ---
-    function showSec(id) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active-sec'));
-        document.getElementById(id + '-sec').classList.add('active-sec');
-        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-        // Find the link that matches the ID and highlight it
-        event.currentTarget.classList.add('active');
-    }
-
-    // --- LIVE STORE ENGINE ---
-    function loadStore() {
-        db.ref('products').on('value', snap => {
-            const container = document.getElementById('product-container');
-            container.innerHTML = "";
-            snap.forEach(child => {
-                const p = child.val();
-                container.innerHTML += `
-                    <div class="p-card">
-                        <img src="${p.img}">
-                        <div class="p-info">
-                            <div class="p-name">${p.name}</div>
-                            <div class="p-price-row">
-                                <span class="p-price">₹${p.price}</span>
-                                <span class="p-mrp">₹${p.mrp}</span>
-                            </div>
-                            <button class="btn-amz-gold" style="margin-top:10px" onclick="openCheckout('${child.key}', '${p.price}', '${p.name}')">Buy Now</button>
-                            <button class="btn-amz-grey" style="margin-top:5px" onclick="addToCart('${p.name}')">Add to Cart</button>
-                        </div>
+    function syncData() {
+        // Load Products
+        db.ref('products').on('value', s => {
+            const g = document.getElementById('store-grid');
+            g.innerHTML = "";
+            s.forEach(p => {
+                const d = p.val();
+                g.innerHTML += `
+                    <div class="card">
+                        <img src="${d.img}">
+                        <div class="p-name">${d.name}</div>
+                        <div class="price">₹${d.price}</div>
+                        <button class="btn-buy" onclick="startBuy('${p.key}','${d.price}')">Buy Now</button>
                     </div>`;
             });
         });
+        // Load Wallet
+        db.ref('wallets/' + auth.currentUser.uid).on('value', s => {
+            document.getElementById('wall-val').innerText = "₹" + (s.val() || 0);
+        });
     }
 
-    // --- CHECKOUT & 5-QUESTION SYSTEM ---
-    let activeOrder = {};
-
-    function openCheckout(id, price, name) {
-        activeOrder = { id, price, name };
-        const overlay = document.createElement('div');
-        overlay.id = "checkout-overlay";
-        overlay.style.display = "block";
-        overlay.innerHTML = `
-            <div style="max-width:400px; margin:auto;">
-                <h2 style="border-bottom:2px solid var(--amz-orange); padding-bottom:10px;">Secure Checkout</h2>
-                <p><b>Product:</b> ${name}</p>
-                <p><b>Total:</b> ₹${price}</p>
-                <div id="checkout-steps">
-                    <label>1. Full Name</label><input type="text" id="c-name" class="auth-input">
-                    <label>2. Mobile Number</label><input type="number" id="c-phone" class="auth-input">
-                    <label>3. Email Address</label><input type="email" id="c-email" class="auth-input">
-                    <label>4. Pincode</label><input type="number" id="c-pin" class="auth-input">
-                    <label>5. Full Delivery Address</label><textarea id="c-addr" class="auth-input" style="height:80px"></textarea>
-                    <button class="btn-amz-gold" onclick="validateAndPay()">Proceed to UPI Payment</button>
-                    <button class="btn-amz-grey" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
-                </div>
-                <div id="upi-step" style="display:none; text-align:center;">
-                    <h3>Pay via UPI</h3>
-                    <p>Scan or Pay to: <b>subhashrajpurohit406@oksbi</b></p>
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=subhashrajpurohit406@oksbi&am=${price}&tn=SRP-Order" style="margin:20px 0;">
-                    <button class="btn-amz-gold" onclick="finalizeOrder()">I Have Paid (Verify Order)</button>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(overlay);
+    function navTo(id) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id + '-page').classList.add('active');
     }
 
-    function validateAndPay() {
-        const fields = ['c-name', 'c-phone', 'c-email', 'c-pin', 'c-addr'];
-        let valid = true;
-        fields.forEach(f => { if(!document.getElementById(f).value) valid = false; });
-        
-        if(!valid) return alert("Please answer all 5 questions correctly!");
-        
-        document.getElementById('checkout-steps').style.display = 'none';
-        document.getElementById('upi-step').style.display = 'block';
+    let currentBuy = {};
+    function startBuy(id, price) {
+        currentBuy = { id, price };
+        document.getElementById('checkout').style.display = 'block';
     }
 
-    function finalizeOrder() {
-        const orderData = {
+    function showPayment() {
+        document.getElementById('steps').style.display = 'none';
+        document.getElementById('pay-step').style.display = 'block';
+        const upi = `upi://pay?pa=subhashrajpurohit406@oksbi&am=${currentBuy.price}`;
+        document.getElementById('qr').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(upi)}">`;
+    }
+
+    function finishOrder() {
+        db.ref('orders').push({
             user: auth.currentUser.email,
-            product: activeOrder.name,
-            amount: activeOrder.price,
-            details: {
-                name: document.getElementById('c-name').value,
-                phone: document.getElementById('c-phone').value,
-                address: document.getElementById('c-addr').value
-            },
-            status: "Pending Verification",
-            timestamp: Date.now()
-        };
-        db.ref('orders').push(orderData).then(() => {
-            alert("Order Logged! Admin will verify your payment of ₹" + activeOrder.price);
-            document.getElementById('checkout-overlay').remove();
+            price: currentBuy.price,
+            status: "Pending Verification"
         });
+        alert("Payment Logged!");
+        document.getElementById('checkout').style.display = 'none';
     }
 
-    // --- RISHI AI ENGINE ---
-    function askRishi() {
-        const input = document.getElementById('ai-input').value.toLowerCase();
-        const box = document.getElementById('chat-box');
-        let reply = "I am Rishi, your SRP Assistant. I can help with orders and payments.";
-        
-        if(input.includes("pay")) reply = "You can pay using UPI ID: subhashrajpurohit406@oksbi during checkout.";
-        if(input.includes("wallet")) reply = "Go to the 'Pay' section to add money to your SRP Wallet.";
-        if(input.includes("delivery")) reply = "Standard delivery takes 3-5 business days after payment verification.";
-
-        box.innerHTML += `<div style="margin-bottom:10px;"><b>You:</b> ${input}</div>`;
-        box.innerHTML += `<div style="margin-bottom:15px; color:#c45500;"><b>Rishi:</b> ${reply}</div>`;
-        box.scrollTop = box.scrollHeight;
-        document.getElementById('ai-input').value = "";
-    }
-
-    // --- ADMIN ACCESS (HIDDEN) ---
-    function openAdminMenu() {
-        const pass = prompt("Enter Admin Access Code:");
-        if(pass === "SRP786") {
-            showSec('admin');
-            loadAdminLogs();
-        } else {
-            alert("Unauthorized Access Attempt Logged.");
+    function adminAccess() {
+        if(prompt("Admin Key:") === "406") {
+            const name = prompt("Product Name:");
+            const price = prompt("Price:");
+            const img = prompt("Image URL:");
+            db.ref('products').push({name, price, img});
         }
     }
 
-    function loadAdminLogs() {
-        db.ref('orders').on('value', snap => {
-            const logDiv = document.getElementById('admin-order-logs');
-            logDiv.innerHTML = "<h4>Live Order Logs</h4>";
-            snap.forEach(child => {
-                const o = child.val();
-                logDiv.innerHTML += `
-                    <div class="acc-box" style="font-size:12px; margin-bottom:10px; border:1px solid #ccc; padding:10px;">
-                        <b>Order:</b> ${o.product}<br>
-                        <b>User:</b> ${o.user}<br>
-                        <b>Status:</b> ${o.status}<br>
-                        <button onclick="db.ref('orders/${child.key}').update({status:'Verified & Shipping'})">Mark Verified</button>
-                    </div>`;
-            });
-        });
+    function askRishi() {
+        const i = document.getElementById('ai-in').value;
+        document.getElementById('chat').innerHTML += `<div><b>You:</b> ${i}</div><div><b>Rishi:</b> Pay to the UPI ID provided in checkout.</div>`;
     }
 </script>
-
+</body>
+</html>
