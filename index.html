@@ -26,7 +26,7 @@
         .tab-btn { background: #e7e9ec; border: 1px solid #adb1b8; padding: 8px; border-radius: 4px; font-size: 11px; cursor: pointer; }
         .tab-btn.active { background: var(--amz-light); color: white; }
         .amz-btn { background: linear-gradient(to bottom, #f7dfa5, #f0c14b); border: 1px solid #a88734; border-radius: 3px; padding: 12px; width: 100%; cursor: pointer; font-weight: bold; }
-        .amz-btn:disabled { background: #ccc; border: 1px solid #999; cursor: not-allowed; }
+        .amz-btn:disabled { background: #ccc; cursor: not-allowed; opacity: 0.6; }
         input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #888; border-radius: 3px; box-sizing: border-box; }
         .p-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         nav.bot-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid #ddd; padding: 10px 0; z-index: 9500; }
@@ -54,14 +54,12 @@
 
     <main id="home-sec" class="sec active-sec">
         <div id="product-feed" class="p-grid"></div>
-        <div class="card"><h4>About Us</h4><p id="h-about"></p></div>
-        <div class="card"><h4>Privacy Policy</h4><p id="h-policy"></p></div>
     </main>
 
     <section id="acc-sec" class="sec">
         <h3>Manage Accounts</h3>
         <div id="manage-acc-list"></div>
-        <button class="amz-btn" style="background:#f0f2f2; margin-top:20px;" onclick="auth.signOut(); localStorage.removeItem('srp_users'); location.reload();">Logout & Clear</button>
+        <button class="amz-btn" style="background:#f0f2f2; margin-top:20px;" onclick="auth.signOut(); localStorage.removeItem('srp_users'); location.reload();">Logout All</button>
     </section>
 
     <section id="wallet-sec" class="sec">
@@ -87,29 +85,27 @@
                 <input id="p-stock" type="number" placeholder="Stock">
                 <textarea id="p-desc" placeholder="Description"></textarea>
                 <input type="file" id="p-file" accept="image/*" onchange="hdlUpload()">
-                <div id="up-status" style="font-size:12px; color:blue; font-weight:bold;"></div>
+                <div id="up-status" style="font-size:12px; color:blue; font-weight:bold; margin:5px 0;"></div>
                 <input type="hidden" id="p-url">
-                <button class="amz-btn" id="p-btn" onclick="saveProduct()" disabled>Please Upload Image</button>
+                <button class="amz-btn" id="p-btn" onclick="saveProduct()" disabled>Wait for Upload...</button>
             </div>
         </div>
 
         <div id="a-recv" class="admin-sub hidden">
-            <h4>Detailed Orders</h4>
+            <h4>Orders Received</h4>
             <div id="admin-recv-list"></div>
         </div>
 
         <div id="a-utr" class="admin-sub hidden"><div id="utr-requests"></div></div>
 
         <div id="a-info" class="admin-sub hidden">
-            <div class="card" style="border: 2px solid var(--amz-orange);">
-                <h4>Change Admin Password</h4>
-                <input type="password" id="new-admin-pin" placeholder="Enter New 4-Digit PIN">
-                <button class="amz-btn" onclick="changeAdminPin()">Update PIN</button>
+            <div class="card" style="border:1px solid var(--amz-orange);">
+                <h5>Change Admin Password</h5>
+                <input type="password" id="new-pin" placeholder="New 4-Digit Pin">
+                <button class="amz-btn" onclick="updatePin()">Save New Pin</button>
             </div>
             <textarea id="in-about" rows="3" placeholder="About Us"></textarea>
             <button class="amz-btn" onclick="updateInfo('about')">Update About</button>
-            <textarea id="in-policy" rows="3" placeholder="Policy"></textarea>
-            <button class="amz-btn" onclick="updateInfo('policy')">Update Policy</button>
         </div>
     </section>
 
@@ -122,12 +118,9 @@
 
 <div id="ai-bot" onclick="toggleChat()">🤖</div>
 <div id="chat-win" class="chat-win hidden">
-    <div style="background:var(--amz-navy); color:white; padding:10px;">SRP Expert AI</div>
+    <div style="background:var(--amz-navy); color:white; padding:10px;">SRP Support AI</div>
     <div id="chat-msgs" style="flex:1; padding:10px; overflow-y:auto; font-size:13px;"></div>
-    <div style="display:flex; padding:5px; border-top:1px solid #ddd;">
-        <input id="chat-in" style="flex:1; border:none;" placeholder="Ask me...">
-        <button onclick="askAI()" style="background:var(--amz-orange); border:none; padding:5px;">Go</button>
-    </div>
+    <div style="display:flex; border-top:1px solid #ddd;"><input id="chat-in" style="flex:1; border:none;"><button onclick="askAI()">Go</button></div>
 </div>
 
 <script>
@@ -142,8 +135,8 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth(), db = firebase.database(), storage = firebase.storage();
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
+// --- ACCOUNT LOGIC ---
 function syncAccounts() {
     const users = JSON.parse(localStorage.getItem('srp_users') || '[]');
     const list = document.getElementById('account-list');
@@ -157,17 +150,14 @@ function syncAccounts() {
         list.innerHTML += h; mList.innerHTML += h;
     });
 }
-
 async function loginNew() {
-    const users = JSON.parse(localStorage.getItem('srp_users') || '[]');
-    if(users.length >= 3) return alert("Limit 3 Accounts");
     const res = await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+    const users = JSON.parse(localStorage.getItem('srp_users') || '[]');
     const n = { email: res.user.email, name: res.user.displayName, photo: res.user.photoURL, uid: res.user.uid };
     if(!users.find(x => x.email === n.email)) users.push(n);
     localStorage.setItem('srp_users', JSON.stringify(users));
     location.reload();
 }
-
 function switchAcc() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
 
 auth.onAuthStateChanged(user => {
@@ -178,45 +168,45 @@ auth.onAuthStateChanged(user => {
     } else { syncAccounts(); }
 });
 
-// --- FIXED UPLOAD LOGIC ---
+// --- CRITICAL UPLOAD FIX ---
 async function hdlUpload() {
     const file = document.getElementById('p-file').files[0];
     const status = document.getElementById('up-status');
     const btn = document.getElementById('p-btn');
     if(!file) return;
-    
-    status.innerText = "UPLOADING TO GALLERY...";
+
+    status.innerText = "UPLOADING... PLEASE WAIT";
     btn.disabled = true;
 
     try {
-        const ref = storage.ref('products/' + Date.now() + "_" + file.name);
-        const uploadTask = ref.put(file);
+        const storageRef = storage.ref('products/' + Date.now() + "_" + file.name);
+        const uploadTask = storageRef.put(file);
 
         uploadTask.on('state_changed', 
             (snapshot) => {
-                const prog = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                status.innerText = "Uploading: " + Math.round(prog) + "%";
+                const prog = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                status.innerText = "Uploading: " + prog + "%";
             }, 
-            (err) => {
-                alert("Upload Failed! Check Firebase Storage Rules.");
-                status.innerText = "Error!";
+            (error) => {
+                console.error(error);
+                status.innerText = "Error: Check Storage Rules!";
                 btn.disabled = false;
             }, 
             async () => {
-                const url = await uploadTask.snapshot.ref.getDownloadURL();
-                document.getElementById('p-url').value = url;
-                status.innerText = "UPLOAD SUCCESSFUL!";
+                const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                document.getElementById('p-url').value = downloadURL;
+                status.innerText = "SUCCESS! READY TO PUBLISH";
                 status.style.color = "green";
                 btn.disabled = false;
-                btn.innerText = "Publish Product Now";
+                btn.innerText = "Publish Product";
             }
         );
-    } catch(e) { console.error(e); }
+    } catch (e) { status.innerText = "Fatal Error!"; btn.disabled = false; }
 }
 
 function saveProduct() {
     const url = document.getElementById('p-url').value;
-    if(!url) return alert("Please wait for upload to finish");
+    if(!url) return alert("Upload Image First!");
     db.ref('products').push({
         name: document.getElementById('p-name').value,
         mrp: document.getElementById('p-mrp').value,
@@ -225,70 +215,66 @@ function saveProduct() {
         desc: document.getElementById('p-desc').value,
         img: url
     });
-    alert("Product Live!"); location.reload();
+    alert("Live!"); location.reload();
 }
 
-// --- ADMIN PASSWORD LOGIC ---
-function changeAdminPin() {
-    const newPin = document.getElementById('new-admin-pin').value;
-    if(newPin.length < 4) return alert("PIN must be at least 4 digits");
-    db.ref('store/admin_pin').set(newPin);
-    alert("Admin PIN updated successfully!");
+// --- ADMIN FEATURES ---
+function updatePin() {
+    const p = document.getElementById('new-pin').value;
+    if(p.length < 4) return alert("Min 4 Digits");
+    db.ref('store/admin_pin').set(p);
+    alert("Pin Updated!");
 }
-
 function checkAdmin() {
     db.ref('store/admin_pin').once('value', s => {
-        const correctPin = s.val() || "406"; 
-        if(prompt("Enter Admin Pin:") === correctPin) nav('admin');
-        else alert("Wrong PIN");
+        const pin = s.val() || "406";
+        if(prompt("Admin Pin:") === pin) nav('admin');
+        else alert("Wrong!");
     });
 }
-
-function buy(id, price, stock, name) {
-    const ph = prompt("Mobile:"), zip = prompt("Zipcode:"), add = prompt("Address:");
-    if(!ph || !zip || !add) return alert("Details required!");
-    db.ref('wallets/'+auth.currentUser.uid).once('value', s => {
-        const bal = s.val()?.balance || 0;
-        if(bal >= price) {
-            db.ref('wallets/'+auth.currentUser.uid).update({ balance: bal - price });
-            db.ref('products/'+id).update({ stock: stock - 1 });
-            db.ref('orders_received').push({
-                user: auth.currentUser.displayName,
-                email: auth.currentUser.email,
-                item: name, ph, zip, add, status: 'Paid'
-            });
-            alert("Order Placed!");
-        } else { alert("Low Balance!"); nav('wallet'); }
-    });
-}
-
-function syncAdminOrders() {
+function syncOrders() {
     db.ref('orders_received').on('value', s => {
         const d = document.getElementById('admin-recv-list'); d.innerHTML = "";
         s.forEach(o => {
             const v = o.val();
             d.innerHTML += `<div class="card" style="font-size:11px;">
-                <b>Product:</b> ${v.item}<br><b>Buyer:</b> ${v.user} (${v.ph})<br>
+                <b>Item:</b> ${v.item}<br><b>Buyer:</b> ${v.user} (${v.ph})<br>
                 <b>Email:</b> ${v.email}<br><b>Addr:</b> ${v.add}, ${v.zip}
             </div>`;
         });
     });
 }
 
-const aiKnowledge = {
-    "hello": "Welcome! I am your SRP AI. How can I help you shop?",
-    "payment": "We use UPI for wallet additions. Send to subhashrajpurohit406@okaxis.",
-    "utr": "UTR is a 12-digit payment ID. Once submitted, admin verifies it manually.",
-    "how to buy": "Top up wallet -> Home -> Click Buy -> Provide address.",
-    "owner": "SRP Pro is managed by Subhash Rajpurohit."
-};
+function buy(id, price, stock, name) {
+    const ph = prompt("Mobile:"), zip = prompt("Zip:"), add = prompt("Address:");
+    if(!ph || !zip || !add) return alert("Incomplete!");
+    db.ref('wallets/'+auth.currentUser.uid).once('value', s => {
+        const bal = s.val()?.balance || 0;
+        if(bal >= price) {
+            db.ref('wallets/'+auth.currentUser.uid).update({ balance: bal - price });
+            db.ref('products/'+id).update({ stock: stock - 1 });
+            db.ref('orders_received').push({
+                user: auth.currentUser.displayName, email: auth.currentUser.email,
+                item: name, ph, zip, add, status: 'Paid'
+            });
+            alert("Ordered!");
+        } else { alert("Low Balance!"); nav('wallet'); }
+    });
+}
 
+// --- AI TRAINING ---
+const aiBrain = {
+    "hello": "Hello! Welcome to SRP Store. I am trained to help you shop.",
+    "payment": "We use UPI. Send money to subhashrajpurohit406@okaxis and submit the 12-digit UTR.",
+    "how to buy": "Add money to wallet, go home, and click Order Now.",
+    "delivery": "Delivery takes 3-7 business days across India."
+};
 function askAI() {
     const q = document.getElementById('chat-in').value.toLowerCase();
     const box = document.getElementById('chat-msgs');
     box.innerHTML += `<div><b>You:</b> ${q}</div>`;
-    let res = "I am still learning. Contact Subhash Sir for urgent help.";
-    for(let k in aiKnowledge) { if(q.includes(k)) res = aiKnowledge[k]; }
+    let res = "Contact Subhash Sir for details on this.";
+    for(let k in aiBrain) { if(q.includes(k)) res = aiBrain[k]; }
     setTimeout(() => { box.innerHTML += `<div style="color:blue"><b>AI:</b> ${res}</div>`; box.scrollTop = box.scrollHeight; }, 400);
 }
 
@@ -299,18 +285,10 @@ function initApp() {
             const v = p.val();
             f.innerHTML += `<div class="card">
                 <img src="${v.img}" style="width:100%; height:110px; object-fit:contain;">
-                <div style="font-weight:bold; font-size:12px;">${v.name}</div>
-                <small><del>₹${v.mrp}</del></small> <b style="color:red">₹${v.price}</b>
-                <button class="amz-btn" style="padding:5px; margin-top:5px;" onclick="buy('${p.key}',${v.price},${v.stock},'${v.name}')">Buy</button>
+                <b>${v.name}</b><br><small>₹${v.price}</small>
+                <button class="amz-btn" style="padding:4px; margin-top:5px;" onclick="buy('${p.key}',${v.price},${v.stock},'${v.name}')">Buy</button>
             </div>`;
         });
-    });
-    db.ref('store').on('value', s => {
-        const v = s.val();
-        document.getElementById('h-about').innerText = v?.about || "";
-        document.getElementById('h-policy').innerText = v?.policy || "";
-        document.getElementById('in-about').value = v?.about || "";
-        document.getElementById('in-policy').value = v?.policy || "";
     });
     db.ref('wallets/'+auth.currentUser.uid).on('value', s => {
         const b = s.val()?.balance || 0;
@@ -320,24 +298,21 @@ function initApp() {
     syncAccounts();
 }
 
-function nav(id) {
+function nav(id, el) {
     document.querySelectorAll('.sec').forEach(s => s.classList.remove('active-sec'));
     document.getElementById(id + '-sec').classList.add('active-sec');
 }
 function atab(id, el) {
     document.querySelectorAll('.admin-sub').forEach(s => s.classList.add('hidden'));
     document.getElementById(id).classList.remove('hidden');
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
-    if(id === 'a-recv') syncAdminOrders();
+    if(id === 'a-recv') syncOrders();
 }
 function openTopUp() {
-    const amt = prompt("Amount:"); if(!amt) return;
-    const utr = prompt("Enter 12-digit UTR:");
+    const amt = prompt("Amount:"); const utr = prompt("UTR:");
     if(utr?.length === 12) db.ref('utr_requests/'+utr).set({ uid: auth.currentUser.uid, email: auth.currentUser.email, amt: parseInt(amt), status: 'pending' });
     alert("Submitted!");
 }
-function updateInfo(t) { db.ref('store/'+t).set(document.getElementById('in-'+t).value); alert("Saved!"); }
+function updateInfo(t) { db.ref('store/'+t).set(document.getElementById('in-'+t).value); alert("Saved"); }
 function toggleChat() { document.getElementById('chat-win').classList.toggle('hidden'); }
 </script>
 </body>
