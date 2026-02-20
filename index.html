@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SRP Pro | Secure Marketplace</title>
+    <title>SRP Pro | Final Edition</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
@@ -12,46 +12,36 @@
         :root { --amz-navy: #232f3e; --amz-orange: #febd69; --bg: #eaeded; --amz-blue: #007185; }
         body { margin: 0; font-family: Arial, sans-serif; background: var(--bg); padding-bottom: 75px; }
         .hidden { display: none !important; }
-        
-        /* HEADER */
         header { background: var(--amz-navy); padding: 12px 15px; position: sticky; top: 0; z-index: 9000; display: flex; align-items: center; color: white; height: 50px; }
         .nav-logo { flex: 1; font-weight: bold; font-size: 20px; }
-        .nav-logo span { color: var(--amz-orange); }
-
-        /* UI ELEMENTS */
         .sec { display: none; padding: 15px; min-height: 80vh; }
         .active-sec { display: block !important; }
         .p-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .p-card { background: #fff; padding: 12px; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative; }
+        .p-card { background: #fff; padding: 12px; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .p-card img { width: 100%; height: 110px; object-fit: contain; }
-        .stock-badge { font-size: 10px; color: #cc0c39; font-weight: bold; margin-bottom: 5px; display: block; }
-        
-        .amz-btn { background: linear-gradient(to bottom, #f7dfa5, #f0c14b); border: 1px solid #a88734; border-radius: 3px; padding: 12px; width: 100%; cursor: pointer; font-weight: bold; margin-bottom: 10px; outline: none; }
-        .amz-btn:disabled { background: #ddd; border-color: #ccc; cursor: not-allowed; }
-
-        /* BOTTOM NAV */
+        .stock-tag { font-size: 10px; color: #cc0c39; font-weight: bold; }
+        .amz-btn { background: linear-gradient(to bottom, #f7dfa5, #f0c14b); border: 1px solid #a88734; border-radius: 3px; padding: 10px; width: 100%; cursor: pointer; font-weight: bold; margin-bottom: 5px; }
+        .amz-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         nav.bot-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid #ddd; padding: 10px 0; z-index: 9500; }
-        .nav-link { text-align: center; font-size: 11px; flex: 1; cursor: pointer; color: #111; }
+        .nav-link { text-align: center; font-size: 11px; flex: 1; cursor: pointer; }
         .nav-link.active { color: #e77600; font-weight: bold; }
-
-        .overlay { position: fixed; inset: 0; background: #fff; z-index: 20000; padding: 20px; text-align: center; overflow-y: auto; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #a6a6a6; border-radius: 4px; box-sizing: border-box; }
+        .rev-item { background: #f9f9f9; padding: 8px; border-radius: 5px; margin-top: 5px; font-size: 12px; }
+        .overlay { position: fixed; inset: 0; background: #fff; z-index: 20000; padding: 20px; overflow-y: auto; }
+        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-<div id="auth-gate">
-    <div style="text-align:center; padding-top:100px;">
-        <h1>srp-shopping<span>.in</span></h1>
-        <button class="amz-btn" style="width:250px;" onclick="handleGoogleLogin()">Sign in with Google</button>
-    </div>
+<div id="auth-gate" style="text-align:center; padding-top:100px;">
+    <h1>srp-shopping<span>.in</span></h1>
+    <button class="amz-btn" style="width:200px;" onclick="auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())">Sign In with Google</button>
 </div>
 
 <div id="app-main" class="hidden">
     <header>
         <div onclick="checkAdmin()" style="margin-right:15px; cursor:pointer;">☰</div>
-        <div class="nav-logo">srp-shopping<span>.in</span></div>
-        <div id="wall-display" style="font-size:14px; color:var(--amz-orange); font-weight:bold;">₹0</div>
+        <div class="nav-logo">SRP<span>.in</span></div>
+        <div id="wall-display" style="font-weight:bold; color:var(--amz-orange);">₹0</div>
     </header>
 
     <main id="home-sec" class="sec active-sec">
@@ -59,33 +49,26 @@
     </main>
 
     <section id="wallet-sec" class="sec">
-        <div style="background: linear-gradient(135deg, #007185, #004d5a); color: white; padding: 25px; border-radius: 10px; text-align: center; margin-bottom: 15px;">
-            <div>Amazon Pay Balance</div>
-            <div id="wall-bal" style="font-size:32px; font-weight:bold;">₹0.00</div>
+        <div style="background:var(--amz-blue); color:white; padding:20px; border-radius:10px; text-align:center;">
+            <div id="wall-bal" style="font-size:28px; font-weight:bold;">₹0.00</div>
+            <div style="font-size:12px;">Wallet Balance</div>
         </div>
-        <button class="amz-btn" onclick="openTopUpModal()">+ Add Money Instantly</button>
-        <h4>History</h4>
-        <div id="wall-history" style="font-size:12px;"></div>
+        <button class="amz-btn" style="margin-top:15px;" onclick="openTopUp()">+ Add Money via UPI</button>
     </section>
 
     <section id="you-sec" class="sec">
-        <h3>Your Orders</h3>
+        <h3>My Orders</h3>
         <div id="user-orders"></div>
-        <button class="amz-btn" style="background:#f0f2f2; margin-top:20px;" onclick="firebase.auth().signOut()">Sign Out</button>
+        <hr>
+        <button class="amz-btn" style="background:#eee;" onclick="auth.signOut()">Logout</button>
     </section>
 
     <section id="admin-sec" class="sec">
-        <h2 style="color:red;">Admin Dashboard</h2>
-        <div style="background:white; padding:15px; border-radius:8px; margin-bottom:20px;">
-            <h4>Add Item with Stock</h4>
-            <input id="pn" placeholder="Product Name">
-            <input id="pp" type="number" placeholder="Price">
-            <input id="ps" type="number" placeholder="Stock Quantity">
-            <input id="pi" placeholder="Image URL">
-            <button class="amz-btn" onclick="publishProduct()">Publish Product</button>
-        </div>
-        <h4>Live Order Management</h4>
-        <div id="admin-order-list"></div>
+        <h2>Admin</h2>
+        <input id="pn" placeholder="Name"> <input id="pp" type="number" placeholder="Price">
+        <input id="ps" type="number" placeholder="Stock"> <input id="pi" placeholder="Img URL">
+        <button class="amz-btn" onclick="publish()">Add Product</button>
+        <div id="admin-orders"></div>
     </section>
 
     <nav class="bot-nav">
@@ -96,15 +79,12 @@
 </div>
 
 <div id="pay-modal" class="overlay hidden">
-    <h3>Secure Payment</h3>
-    <div id="qr-area"></div>
-    <p>UPI ID: <b>subhashrajpurohit406@oksbi</b></p>
-    <a id="upi-link" href="#"><button class="amz-btn" style="background:green; color:white;">Pay via UPI App</button></a>
-    <div style="background:#f9f9f9; padding:15px; border-radius:8px; margin-top:15px;">
-        <input type="number" id="utr-input" placeholder="Enter 12-digit UTR">
-        <button class="amz-btn" id="verify-btn" onclick="verifyUTR()">Verify Payment</button>
-    </div>
-    <button onclick="document.getElementById('pay-modal').classList.add('hidden')" style="color:red; background:none; border:none; margin-top:15px;">Cancel</button>
+    <h3>UPI Top-up</h3>
+    <div id="qr-area" style="margin:20px 0;"></div>
+    <a id="upi-link" href="#"><button class="amz-btn" style="background:green; color:white;">Pay with UPI App</button></a>
+    <input type="number" id="utr-in" placeholder="12-digit UTR No.">
+    <button class="amz-btn" onclick="verifyUTR()">Verify & Add Balance</button>
+    <button onclick="document.getElementById('pay-modal').classList.add('hidden')" style="color:red; background:none; border:none; margin-top:10px;">Cancel</button>
 </div>
 
 <script>
@@ -117,10 +97,8 @@
         messagingSenderId: "1094431391415",
         appId: "1:1094431391415:web:6ef0bcd2841373e20fd732"
     };
-
     firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.database();
+    const auth = firebase.auth(), db = firebase.database();
 
     auth.onAuthStateChanged(user => {
         if (user) {
@@ -129,10 +107,9 @@
             syncHome(); syncWallet(); syncOrders();
         } else {
             document.getElementById('auth-gate').classList.remove('hidden');
+            document.getElementById('app-main').classList.add('hidden');
         }
     });
-
-    function handleGoogleLogin() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
 
     function nav(id, el) {
         document.querySelectorAll('.sec').forEach(s => s.classList.remove('active-sec'));
@@ -142,104 +119,96 @@
         if(id === 'admin') syncAdminOrders();
     }
 
-    // --- WALLET ---
-    let payAmt = 0;
-    function openTopUpModal() {
-        const a = prompt("Enter Amount:"); if(!a) return;
-        payAmt = parseFloat(a);
-        const url = `upi://pay?pa=subhashrajpurohit406@oksbi&pn=SRP&am=${payAmt}&cu=INR`;
-        document.getElementById('qr-area').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(url)}">`;
-        document.getElementById('upi-link').href = url;
+    let topAmt = 0;
+    function openTopUp() {
+        topAmt = parseFloat(prompt("Amount?"));
+        if(!topAmt) return;
+        const upi = `upi://pay?pa=subhashrajpurohit406@oksbi&pn=SRP&am=${topAmt}&cu=INR`;
+        document.getElementById('qr-area').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upi)}">`;
+        document.getElementById('upi-link').href = upi;
         document.getElementById('pay-modal').classList.remove('hidden');
     }
 
     function verifyUTR() {
-        const utr = document.getElementById('utr-input').value;
-        if(utr.length < 12) return alert("Invalid UTR");
-        db.ref('used_utrs/'+utr).once('value', s => {
-            if(s.exists()) return alert("Used UTR");
+        const u = document.getElementById('utr-in').value;
+        if(u.length < 12) return alert("Bad UTR");
+        db.ref('used_utrs/'+u).once('value', s => {
+            if(s.exists()) return alert("Used");
             db.ref('wallets/'+auth.currentUser.uid).once('value', w => {
-                const bal = (w.val() ? w.val().balance : 0) + payAmt;
-                db.ref('wallets/'+auth.currentUser.uid).update({ balance: bal });
-                db.ref('wallets/'+auth.currentUser.uid+'/logs').push({ type: "Top-up", amt: payAmt });
-                db.ref('used_utrs/'+utr).set(true);
+                const b = (w.val()?.balance || 0) + topAmt;
+                db.ref('wallets/'+auth.currentUser.uid).update({ balance: b });
+                db.ref('used_utrs/'+u).set(true);
                 alert("Success!"); document.getElementById('pay-modal').classList.add('hidden');
             });
         });
     }
 
-    // --- INVENTORY & ORDERS ---
     function syncHome() {
         db.ref('products').on('value', snap => {
-            const feed = document.getElementById('product-feed'); feed.innerHTML = "";
+            const f = document.getElementById('product-feed'); f.innerHTML = "";
             snap.forEach(c => {
-                const p = c.val();
+                const p = c.val(), id = c.key;
                 const stock = p.stock || 0;
-                const outOfStock = stock <= 0;
-                feed.innerHTML += `
-                    <div class="p-card">
-                        <img src="${p.pi}">
-                        <div style="font-size:12px; margin-top:5px;">${p.pn}</div>
-                        <span class="stock-badge">${outOfStock ? 'OUT OF STOCK' : 'Only '+stock+' left'}</span>
-                        <b>₹${p.pp}</b>
-                        <button class="amz-btn" style="padding:8px; margin-top:5px;" 
-                            ${outOfStock ? 'disabled' : ''} 
-                            onclick="placeOrder('${c.key}', '${p.pn}', ${p.pp}, ${stock})">
-                            ${outOfStock ? 'Sold Out' : 'Buy Now'}
-                        </button>
-                    </div>`;
+                f.innerHTML += `
+                <div class="p-card">
+                    <img src="${p.pi}">
+                    <div style="font-size:12px;">${p.pn}</div>
+                    <span class="stock-tag">${stock > 0 ? 'In Stock: '+stock : 'SOLD OUT'}</span><br>
+                    <b>₹${p.pp}</b>
+                    <button class="amz-btn" ${stock <= 0 ? 'disabled':''} onclick="buy('${id}', ${p.pp}, ${stock}, '${p.pn}')">Buy</button>
+                    <button class="amz-btn" style="background:#eee; font-size:10px;" onclick="addReview('${id}')">Review</button>
+                    <div id="rev-${id}"></div>
+                </div>`;
+                syncReviews(id);
             });
         });
     }
 
-    function placeOrder(key, name, price, currentStock) {
+    function buy(id, pr, st, name) {
         db.ref('wallets/'+auth.currentUser.uid).once('value', w => {
-            const bal = w.val() ? w.val().balance : 0;
-            if(bal >= price) {
-                // Update Stock and Place Order
-                db.ref('products/'+key).update({ stock: currentStock - 1 });
-                db.ref('wallets/'+auth.currentUser.uid).update({ balance: bal - price });
-                db.ref('orders').push({ uid: auth.currentUser.uid, user: auth.currentUser.email, item: name, status: "Pending", time: Date.now() });
-                alert("Order Placed!");
-            } else { alert("Insufficient Balance"); nav('wallet'); }
+            const b = w.val()?.balance || 0;
+            if(b >= pr) {
+                db.ref('wallets/'+auth.currentUser.uid).update({ balance: b - pr });
+                db.ref('products/'+id).update({ stock: st - 1 });
+                db.ref('orders').push({ uid: auth.currentUser.uid, user: auth.currentUser.email, item: name, status: "Pending" });
+                alert("Ordered!");
+            } else { alert("Low Balance"); nav('wallet'); }
+        });
+    }
+
+    function addReview(id) {
+        const txt = prompt("Your Review:"); if(!txt) return;
+        db.ref('reviews/'+id).push({ user: auth.currentUser.displayName, text: txt });
+    }
+
+    function syncReviews(id) {
+        db.ref('reviews/'+id).limitToLast(2).on('value', s => {
+            const d = document.getElementById('rev-'+id); d.innerHTML = "";
+            s.forEach(r => { d.innerHTML += `<div class="rev-item"><b>${r.val().user}:</b> ${r.val().text}</div>`; });
         });
     }
 
     function syncOrders() {
-        db.ref('orders').orderByChild('uid').equalTo(auth.currentUser.uid).on('value', snap => {
-            const div = document.getElementById('user-orders'); div.innerHTML = "";
-            snap.forEach(c => {
-                const o = c.val();
-                div.innerHTML += `<div style="background:#fff; padding:10px; margin-top:5px; border-radius:4px;">
-                    <b>${o.item}</b> - Status: <span style="color:green">${o.status}</span>
-                </div>`;
-            });
+        db.ref('orders').orderByChild('uid').equalTo(auth.currentUser.uid).on('value', s => {
+            const d = document.getElementById('user-orders'); d.innerHTML = "";
+            s.forEach(o => { d.innerHTML += `<div style="background:#fff; padding:10px; margin-top:5px;">${o.val().item} - ${o.val().status}</div>`; });
         });
     }
 
-    // --- ADMIN ---
     function checkAdmin() { if(prompt("Pin:") === "406") nav('admin'); }
-    function publishProduct() {
-        const n = document.getElementById('pn').value, p = document.getElementById('pp').value, 
-              s = document.getElementById('ps').value, i = document.getElementById('pi').value;
+    function publish() {
+        const n = document.getElementById('pn').value, p = document.getElementById('pp').value, s = document.getElementById('ps').value, i = document.getElementById('pi').value;
         db.ref('products').push({ pn: n, pp: p, stock: parseInt(s), pi: i });
-        alert("Product Added!");
     }
     function syncAdminOrders() {
-        db.ref('orders').on('value', snap => {
-            const div = document.getElementById('admin-order-list'); div.innerHTML = "";
-            snap.forEach(c => {
-                const o = c.val();
-                div.innerHTML += `<div style="background:#fff; padding:10px; border-bottom:1px solid #ddd;">
-                    ${o.user}: ${o.item} <button onclick="db.ref('orders/${c.key}').update({status:'Shipped'})">Mark Shipped</button>
-                </div>`;
-            });
+        db.ref('orders').on('value', s => {
+            const d = document.getElementById('admin-orders'); d.innerHTML = "";
+            s.forEach(o => { d.innerHTML += `<div>${o.val().user}: ${o.val().item} <button onclick="db.ref('orders/${o.key}').update({status:'Shipped'})">Ship</button></div>`; });
         });
     }
-
     function syncWallet() {
-        db.ref('wallets/'+auth.currentUser.uid).on('value', snap => {
-            const b = snap.val() ? snap.val().balance : 0;
+        db.ref('wallets/'+auth.currentUser.uid).on('value', s => {
+            const b = s.val()?.balance || 0;
             document.getElementById('wall-bal').innerText = "₹" + b.toFixed(2);
             document.getElementById('wall-display').innerText = "₹" + b.toFixed(0);
         });
