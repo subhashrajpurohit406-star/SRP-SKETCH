@@ -27,8 +27,7 @@
         .tab-btn.active { background: var(--amz-light); color: white; }
         .amz-btn { background: linear-gradient(to bottom, #f7dfa5, #f0c14b); border: 1px solid #a88734; border-radius: 3px; padding: 12px; width: 100%; cursor: pointer; font-weight: bold; }
         .amz-btn:disabled { background: #ccc; cursor: not-allowed; opacity: 0.6; }
-        /* ADDED DELETE BUTTON STYLE */
-        .del-btn { background: #ff4444; color: white; border: none; padding: 5px; border-radius: 3px; cursor: pointer; font-size: 10px; margin-top: 5px; width: 100%; font-weight: bold; }
+        .del-btn { background: #ff4444; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 10px; margin-top: 5px; width: 100%; font-weight: bold; }
         input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #888; border-radius: 3px; box-sizing: border-box; }
         .p-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         nav.bot-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid #ddd; padding: 10px 0; z-index: 9500; }
@@ -170,41 +169,40 @@ auth.onAuthStateChanged(user => {
     } else { syncAccounts(); }
 });
 
-// --- UPDATED UPLOAD LOGIC (ImgBB) ---
+// --- CRITICAL UPLOAD FIX ---
 async function hdlUpload() {
     const file = document.getElementById('p-file').files[0];
     const status = document.getElementById('up-status');
     const btn = document.getElementById('p-btn');
     if(!file) return;
 
-    status.innerText = "UPLOADING TO CLOUD...";
+    status.innerText = "UPLOADING... PLEASE WAIT";
     btn.disabled = true;
 
     try {
-        let formData = new FormData();
-        formData.append("image", file);
+        const storageRef = storage.ref('products/' + Date.now() + "_" + file.name);
+        const uploadTask = storageRef.put(file);
 
-        // USING YOUR KEY: 64994b3f4387b9343d7e3ff014a21847
-        const res = await fetch("https://api.imgbb.com/1/upload?key=64994b3f4387b9343d7e3ff014a21847", {
-            method: "POST",
-            body: formData
-        });
-        const data = await res.json();
-
-        if(data.success) {
-            document.getElementById('p-url').value = data.data.url;
-            status.innerText = "SUCCESS! READY TO PUBLISH";
-            status.style.color = "green";
-            btn.disabled = false;
-            btn.innerText = "Publish Product";
-        } else {
-            status.innerText = "Upload Failed!";
-            btn.disabled = false;
-        }
-    } catch (e) { 
-        status.innerText = "Error!"; 
-        btn.disabled = false; 
-    }
+        uploadTask.on('state_changed', 
+            (snapshot) => {
+                const prog = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                status.innerText = "Uploading: " + prog + "%";
+            }, 
+            (error) => {
+                console.error(error);
+                status.innerText = "Error: Check Storage Rules!";
+                btn.disabled = false;
+            }, 
+            async () => {
+                const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                document.getElementById('p-url').value = downloadURL;
+                status.innerText = "SUCCESS! READY TO PUBLISH";
+                status.style.color = "green";
+                btn.disabled = false;
+                btn.innerText = "Publish Product";
+            }
+        );
+    } catch (e) { status.innerText = "Fatal Error!"; btn.disabled = false; }
 }
 
 function saveProduct() {
@@ -221,13 +219,6 @@ function saveProduct() {
     alert("Live!"); location.reload();
 }
 
-// ADDED DELETE FUNCTION
-function deleteProduct(id) {
-    if(confirm("Permanently delete this product?")) {
-        db.ref('products/' + id).remove();
-    }
-}
-
 // --- ADMIN FEATURES ---
 function updatePin() {
     const p = document.getElementById('new-pin').value;
@@ -235,13 +226,21 @@ function updatePin() {
     db.ref('store/admin_pin').set(p);
     alert("Pin Updated!");
 }
+
 function checkAdmin() {
     db.ref('store/admin_pin').once('value', s => {
-        const pin = s.val() || "406";
+        const pin = s.val() || "2030"; // FALLBACK CHANGED TO 2030
         if(prompt("Admin Pin:") === pin) nav('admin');
         else alert("Wrong!");
     });
 }
+
+function deleteProduct(id) {
+    if(confirm("Are you sure you want to delete this product?")) {
+        db.ref('products/' + id).remove().then(() => alert("Deleted!"));
+    }
+}
+
 function syncOrders() {
     db.ref('orders_received').on('value', s => {
         const d = document.getElementById('admin-recv-list'); d.innerHTML = "";
@@ -293,11 +292,12 @@ function initApp() {
         const f = document.getElementById('product-feed'); f.innerHTML = "";
         s.forEach(p => {
             const v = p.val();
+            // ADDED DELETE BUTTON HERE
             f.innerHTML += `<div class="card">
                 <img src="${v.img}" style="width:100%; height:110px; object-fit:contain;">
                 <b>${v.name}</b><br><small>₹${v.price}</small>
                 <button class="amz-btn" style="padding:4px; margin-top:5px;" onclick="buy('${p.key}',${v.price},${v.stock},'${v.name}')">Buy</button>
-                <button class="del-btn" onclick="deleteProduct('${p.key}')">🗑 Delete</button>
+                <button class="del-btn" onclick="deleteProduct('${p.key}')">🗑 Delete Product</button>
             </div>`;
         });
     });
