@@ -3,71 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SRP Pro | Final Edition</title>
+    <title>SRP Pro | Premium Store</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
     <style>
-        :root { --amz-navy: #232f3e; --amz-orange: #febd69; --bg: #eaeded; --amz-blue: #007185; }
-        body { margin: 0; font-family: Arial, sans-serif; background: var(--bg); padding-bottom: 75px; }
+        :root { --amz-navy: #131921; --amz-light-navy: #232f3e; --amz-orange: #febd69; --amz-yellow: #ffd814; --bg: #f3f3f3; --text: #111; }
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); padding-bottom: 75px; overflow-x: hidden; }
         .hidden { display: none !important; }
-        header { background: var(--amz-navy); padding: 12px 15px; position: sticky; top: 0; z-index: 9000; display: flex; align-items: center; color: white; height: 50px; }
-        .nav-logo { flex: 1; font-weight: bold; font-size: 20px; }
-        .sec { display: none; padding: 15px; min-height: 80vh; }
+
+        /* PROFESSIONAL HEADER */
+        header { background: var(--amz-navy); padding: 10px 15px; position: sticky; top: 0; z-index: 9000; display: flex; align-items: center; justify-content: space-between; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .brand { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; cursor: pointer; }
+        .brand span { color: var(--amz-orange); }
+        #wall-display { background: var(--amz-light-navy); padding: 5px 12px; border-radius: 20px; font-size: 14px; border: 1px solid #444; }
+
+        /* PRODUCT CARDS */
+        .sec { display: none; padding: 15px; animation: fadeIn 0.3s ease; }
         .active-sec { display: block !important; }
-        .p-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .p-card { background: #fff; padding: 12px; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .p-card img { width: 100%; height: 110px; object-fit: contain; }
-        .stock-tag { font-size: 10px; color: #cc0c39; font-weight: bold; }
-        .amz-btn { background: linear-gradient(to bottom, #f7dfa5, #f0c14b); border: 1px solid #a88734; border-radius: 3px; padding: 10px; width: 100%; cursor: pointer; font-weight: bold; margin-bottom: 5px; }
-        .amz-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        nav.bot-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid #ddd; padding: 10px 0; z-index: 9500; }
-        .nav-link { text-align: center; font-size: 11px; flex: 1; cursor: pointer; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .p-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+        .p-card { background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; display: flex; flex-direction: column; transition: transform 0.2s; }
+        .p-card:active { transform: scale(0.98); }
+        .p-card img { width: 100%; height: 140px; object-fit: contain; padding: 10px; box-sizing: border-box; background: #fff; }
+        .p-info { padding: 10px; flex-grow: 1; border-top: 1px solid #eee; }
+        .p-name { font-size: 13px; font-weight: 500; height: 35px; overflow: hidden; color: #007185; }
+        .stock-tag { font-size: 11px; color: #b12704; font-weight: bold; margin: 4px 0; }
+        .p-price { font-size: 18px; font-weight: 700; color: #0f1111; }
+
+        /* BUTTONS */
+        .amz-btn { background: linear-gradient(to bottom, #f7dfa5, #f0c14b); border: 1px solid #a88734; border-radius: 8px; padding: 10px; cursor: pointer; font-weight: 600; font-size: 13px; transition: 0.2s; }
+        .amz-btn:active { background: #f0c14b; }
+        .amz-btn:disabled { background: #e7e9ec; border-color: #adb1b8; color: #888; cursor: not-allowed; }
+
+        /* NAVIGATION */
+        nav.bot-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid #ddd; padding: 8px 0; z-index: 9500; }
+        .nav-link { text-align: center; font-size: 11px; flex: 1; cursor: pointer; color: #555; }
+        .nav-link i { font-size: 20px; display: block; margin-bottom: 3px; }
         .nav-link.active { color: #e77600; font-weight: bold; }
-        .rev-item { background: #f9f9f9; padding: 8px; border-radius: 5px; margin-top: 5px; font-size: 12px; }
-        .overlay { position: fixed; inset: 0; background: #fff; z-index: 20000; padding: 20px; overflow-y: auto; }
-        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+
+        /* MODALS */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 20000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .modal-content { background: #fff; width: 100%; max-width: 400px; border-radius: 12px; padding: 20px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #888; border-radius: 5px; font-size: 16px; }
+        
+        .review-box { background: #f9f9f9; border-radius: 5px; padding: 8px; margin-top: 8px; font-size: 12px; text-align: left; }
     </style>
 </head>
 <body>
 
-<div id="auth-gate" style="text-align:center; padding-top:100px;">
-    <h1>srp-shopping<span>.in</span></h1>
-    <button class="amz-btn" style="width:200px;" onclick="auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())">Sign In with Google</button>
+<div id="auth-gate" style="text-align:center; padding-top:120px; background:white; position:fixed; inset:0; z-index:30000;">
+    <h1 class="brand" style="font-size:35px; color:#131921;">SRP<span>.in</span></h1>
+    <p style="color:#555;">Premium Shopping Redefined</p><br>
+    <button class="amz-btn" style="width:250px; padding:15px; font-size:16px;" onclick="auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())">Sign in with Google</button>
 </div>
 
 <div id="app-main" class="hidden">
     <header>
-        <div onclick="checkAdmin()" style="margin-right:15px; cursor:pointer;">☰</div>
-        <div class="nav-logo">SRP<span>.in</span></div>
-        <div id="wall-display" style="font-weight:bold; color:var(--amz-orange);">₹0</div>
+        <div class="brand" onclick="checkAdmin()">SRP<span>.in</span></div>
+        <div id="wall-display">₹0</div>
     </header>
 
     <main id="home-sec" class="sec active-sec">
+        <h3 style="margin-top:0;">Featured Products</h3>
         <div id="product-feed" class="p-grid"></div>
     </main>
 
     <section id="wallet-sec" class="sec">
-        <div style="background:var(--amz-blue); color:white; padding:20px; border-radius:10px; text-align:center;">
-            <div id="wall-bal" style="font-size:28px; font-weight:bold;">₹0.00</div>
-            <div style="font-size:12px;">Wallet Balance</div>
+        <div style="background:linear-gradient(135deg, #131921, #232f3e); color:white; padding:30px; border-radius:12px; text-align:center; margin-bottom:20px;">
+            <div id="wall-bal" style="font-size:36px; font-weight:800; color:var(--amz-orange);">₹0.00</div>
+            <div style="font-size:14px; opacity:0.8;">Available Balance</div>
         </div>
-        <button class="amz-btn" style="margin-top:15px;" onclick="openTopUp()">+ Add Money via UPI</button>
+        <button class="amz-btn" style="width:100%; padding:15px;" onclick="openTopUp()">+ Top-up Wallet Instantly</button>
+        <h4 style="margin-top:25px;">Recent Transactions</h4>
+        <div id="wall-history" style="font-size:13px; color:#555;"></div>
     </section>
 
     <section id="you-sec" class="sec">
-        <h3>My Orders</h3>
+        <h3>Your Orders</h3>
         <div id="user-orders"></div>
-        <hr>
-        <button class="amz-btn" style="background:#eee;" onclick="auth.signOut()">Logout</button>
+        <button class="amz-btn" style="background:#eee; margin-top:30px; border-color:#ccc; width:100%;" onclick="auth.signOut()">Sign Out</button>
     </section>
 
     <section id="admin-sec" class="sec">
-        <h2>Admin</h2>
-        <input id="pn" placeholder="Name"> <input id="pp" type="number" placeholder="Price">
-        <input id="ps" type="number" placeholder="Stock"> <input id="pi" placeholder="Img URL">
-        <button class="amz-btn" onclick="publish()">Add Product</button>
+        <h2 style="color:red;">Inventory Control</h2>
+        <div style="background:white; padding:15px; border-radius:8px; border:1px solid #ddd;">
+            <input id="pn" placeholder="Product Name">
+            <input id="pp" type="number" placeholder="Price (₹)">
+            <input id="ps" type="number" placeholder="Stock Quantity">
+            <input id="pi" placeholder="Image URL (Clear PNG/JPG)">
+            <button class="amz-btn" style="width:100%; margin-top:10px;" onclick="publish()">Add to Store</button>
+        </div>
+        <h4>Active Orders</h4>
         <div id="admin-orders"></div>
     </section>
 
@@ -79,12 +108,17 @@
 </div>
 
 <div id="pay-modal" class="overlay hidden">
-    <h3>UPI Top-up</h3>
-    <div id="qr-area" style="margin:20px 0;"></div>
-    <a id="upi-link" href="#"><button class="amz-btn" style="background:green; color:white;">Pay with UPI App</button></a>
-    <input type="number" id="utr-in" placeholder="12-digit UTR No.">
-    <button class="amz-btn" onclick="verifyUTR()">Verify & Add Balance</button>
-    <button onclick="document.getElementById('pay-modal').classList.add('hidden')" style="color:red; background:none; border:none; margin-top:10px;">Cancel</button>
+    <div class="modal-content">
+        <h3 style="margin-top:0;">Wallet Top-up</h3>
+        <div id="qr-area" style="background:#f9f9f9; padding:15px; border-radius:10px; display:inline-block; margin-bottom:15px;"></div>
+        <p style="font-size:13px; color:#666;">Scan QR or use UPI ID below:</p>
+        <b style="color:var(--amz-blue); font-size:14px;">subhashrajpurohit406@oksbi</b>
+        <div style="margin:20px 0;">
+            <input type="number" id="utr-in" placeholder="Enter 12-Digit UTR Number">
+            <button class="amz-btn" style="width:100%; padding:12px; background:var(--amz-yellow);" onclick="verifyUTR()">Complete Verification</button>
+        </div>
+        <button onclick="document.getElementById('pay-modal').classList.add('hidden')" style="background:none; border:none; color:red; font-weight:bold; cursor:pointer;">Cancel Payment</button>
+    </div>
 </div>
 
 <script>
@@ -119,91 +153,119 @@
         if(id === 'admin') syncAdminOrders();
     }
 
-    let topAmt = 0;
+    // PAYMENT LOGIC
+    let currentTopUp = 0;
     function openTopUp() {
-        topAmt = parseFloat(prompt("Amount?"));
-        if(!topAmt) return;
-        const upi = `upi://pay?pa=subhashrajpurohit406@oksbi&pn=SRP&am=${topAmt}&cu=INR`;
+        const amt = prompt("Enter amount to add (₹):");
+        if(!amt || isNaN(amt)) return;
+        currentTopUp = parseFloat(amt);
+        const upi = `upi://pay?pa=subhashrajpurohit406@oksbi&pn=SRP_PRO&am=${currentTopUp}&cu=INR`;
         document.getElementById('qr-area').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upi)}">`;
-        document.getElementById('upi-link').href = upi;
         document.getElementById('pay-modal').classList.remove('hidden');
     }
 
     function verifyUTR() {
         const u = document.getElementById('utr-in').value;
-        if(u.length < 12) return alert("Bad UTR");
+        if(u.length < 12) return alert("Please enter a valid 12-digit UTR/Ref number.");
         db.ref('used_utrs/'+u).once('value', s => {
-            if(s.exists()) return alert("Used");
+            if(s.exists()) return alert("This UTR has already been used!");
             db.ref('wallets/'+auth.currentUser.uid).once('value', w => {
-                const b = (w.val()?.balance || 0) + topAmt;
-                db.ref('wallets/'+auth.currentUser.uid).update({ balance: b });
-                db.ref('used_utrs/'+u).set(true);
-                alert("Success!"); document.getElementById('pay-modal').classList.add('hidden');
+                const newBal = (w.val()?.balance || 0) + currentTopUp;
+                db.ref('wallets/'+auth.currentUser.uid).update({ balance: newBal });
+                db.ref('wallets/'+auth.currentUser.uid+'/logs').push({ type: "Top-up", amt: currentTopUp, time: Date.now() });
+                db.ref('used_utrs/'+u).set({ user: auth.currentUser.email, amt: currentTopUp });
+                alert("Success! ₹" + currentTopUp + " added to your wallet.");
+                document.getElementById('pay-modal').classList.add('hidden');
+                document.getElementById('utr-in').value = "";
             });
         });
     }
 
+    // STORE & INVENTORY
     function syncHome() {
         db.ref('products').on('value', snap => {
-            const f = document.getElementById('product-feed'); f.innerHTML = "";
+            const feed = document.getElementById('product-feed'); feed.innerHTML = "";
             snap.forEach(c => {
-                const p = c.val(), id = c.key;
-                const stock = p.stock || 0;
-                f.innerHTML += `
+                const p = c.val(), id = c.key, stock = p.stock || 0;
+                const isSoldOut = stock <= 0;
+                feed.innerHTML += `
                 <div class="p-card">
-                    <img src="${p.pi}">
-                    <div style="font-size:12px;">${p.pn}</div>
-                    <span class="stock-tag">${stock > 0 ? 'In Stock: '+stock : 'SOLD OUT'}</span><br>
-                    <b>₹${p.pp}</b>
-                    <button class="amz-btn" ${stock <= 0 ? 'disabled':''} onclick="buy('${id}', ${p.pp}, ${stock}, '${p.pn}')">Buy</button>
-                    <button class="amz-btn" style="background:#eee; font-size:10px;" onclick="addReview('${id}')">Review</button>
-                    <div id="rev-${id}"></div>
+                    <img src="${p.pi}" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
+                    <div class="p-info">
+                        <div class="p-name">${p.pn}</div>
+                        <div class="stock-tag">${isSoldOut ? 'Currently Out of Stock' : 'Only '+stock+' left in stock'}</div>
+                        <div class="p-price">₹${p.pp}</div>
+                        <button class="amz-btn" style="width:100%; margin-top:10px;" 
+                            ${isSoldOut ? 'disabled':''} 
+                            onclick="buy('${id}', ${p.pp}, ${stock}, '${p.pn}')">
+                            ${isSoldOut ? 'Sold Out' : 'Buy Now'}
+                        </button>
+                        <button class="amz-btn" style="background:#eee; font-size:11px; margin-top:5px; width:100%; border:none;" onclick="addReview('${id}')">Write a Review</button>
+                        <div id="rev-${id}"></div>
+                    </div>
                 </div>`;
-                syncReviews(id);
+                loadReviews(id);
             });
         });
     }
 
-    function buy(id, pr, st, name) {
+    function buy(id, price, stock, name) {
         db.ref('wallets/'+auth.currentUser.uid).once('value', w => {
-            const b = w.val()?.balance || 0;
-            if(b >= pr) {
-                db.ref('wallets/'+auth.currentUser.uid).update({ balance: b - pr });
-                db.ref('products/'+id).update({ stock: st - 1 });
-                db.ref('orders').push({ uid: auth.currentUser.uid, user: auth.currentUser.email, item: name, status: "Pending" });
-                alert("Ordered!");
-            } else { alert("Low Balance"); nav('wallet'); }
+            const bal = w.val()?.balance || 0;
+            if(bal >= price) {
+                db.ref('wallets/'+auth.currentUser.uid).update({ balance: bal - price });
+                db.ref('products/'+id).update({ stock: stock - 1 });
+                db.ref('orders').push({ uid: auth.currentUser.uid, user: auth.currentUser.email, item: name, status: "Pending", price: price });
+                alert("Order Placed Successfully!");
+            } else { alert("Insufficient Balance! Please top-up your wallet."); nav('wallet'); }
         });
     }
 
     function addReview(id) {
-        const txt = prompt("Your Review:"); if(!txt) return;
+        const txt = prompt("Tell us what you think:"); if(!txt) return;
         db.ref('reviews/'+id).push({ user: auth.currentUser.displayName, text: txt });
     }
 
-    function syncReviews(id) {
-        db.ref('reviews/'+id).limitToLast(2).on('value', s => {
+    function loadReviews(id) {
+        db.ref('reviews/'+id).limitToLast(1).on('value', s => {
             const d = document.getElementById('rev-'+id); d.innerHTML = "";
-            s.forEach(r => { d.innerHTML += `<div class="rev-item"><b>${r.val().user}:</b> ${r.val().text}</div>`; });
+            s.forEach(r => { d.innerHTML = `<div class="review-box"><b>${r.val().user}:</b> ${r.val().text}</div>`; });
         });
     }
 
     function syncOrders() {
         db.ref('orders').orderByChild('uid').equalTo(auth.currentUser.uid).on('value', s => {
-            const d = document.getElementById('user-orders'); d.innerHTML = "";
-            s.forEach(o => { d.innerHTML += `<div style="background:#fff; padding:10px; margin-top:5px;">${o.val().item} - ${o.val().status}</div>`; });
+            const div = document.getElementById('user-orders'); div.innerHTML = "";
+            if(!s.exists()) div.innerHTML = "<p style='color:#777;'>No orders yet.</p>";
+            s.forEach(o => {
+                const data = o.val();
+                div.innerHTML += `<div style="background:#fff; padding:15px; margin-bottom:10px; border-radius:8px; border-left:4px solid var(--amz-orange);">
+                    <div style="font-weight:bold;">${data.item}</div>
+                    <div style="font-size:12px; color:#555;">Status: <span style="color:green; font-weight:bold;">${data.status}</span></div>
+                </div>`;
+            });
         });
     }
 
-    function checkAdmin() { if(prompt("Pin:") === "406") nav('admin'); }
+    // ADMIN CONTROLS
+    function checkAdmin() { if(prompt("Enter Admin Pin:") === "406") nav('admin'); }
     function publish() {
         const n = document.getElementById('pn').value, p = document.getElementById('pp').value, s = document.getElementById('ps').value, i = document.getElementById('pi').value;
+        if(!n || !p || !s || !i) return alert("Fill all fields");
         db.ref('products').push({ pn: n, pp: p, stock: parseInt(s), pi: i });
+        alert("Product Live!");
+        document.getElementById('pn').value = ""; document.getElementById('pp').value = ""; document.getElementById('ps').value = ""; document.getElementById('pi').value = "";
     }
     function syncAdminOrders() {
         db.ref('orders').on('value', s => {
             const d = document.getElementById('admin-orders'); d.innerHTML = "";
-            s.forEach(o => { d.innerHTML += `<div>${o.val().user}: ${o.val().item} <button onclick="db.ref('orders/${o.key}').update({status:'Shipped'})">Ship</button></div>`; });
+            s.forEach(o => {
+                d.innerHTML += `<div style="background:#fff; padding:10px; margin-top:10px; border:1px solid #ddd;">
+                    <b>${o.val().user}</b>: ${o.val().item}<br>
+                    <button onclick="db.ref('orders/${o.key}').update({status:'Shipped'})">Mark Shipped</button>
+                    <button onclick="db.ref('orders/${o.key}').update({status:'Delivered'})">Mark Delivered</button>
+                </div>`;
+            });
         });
     }
     function syncWallet() {
