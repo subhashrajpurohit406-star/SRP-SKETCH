@@ -2,68 +2,58 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SRP Pro | Emergency Fix</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRP Pro | Fixed</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
-
     <style>
-        :root { --amz-navy: #131921; --amz-orange: #febd69; --bg: #f3f3f3; }
-        body { margin: 0; font-family: 'Segoe UI', Arial; background: var(--bg); padding-bottom: 70px; }
-        .hidden { display: none !important; }
-        header { background: var(--amz-navy); padding: 12px 15px; color: white; display: flex; justify-content: space-between; align-items: center; }
-        .brand { font-weight: bold; font-size: 22px; color: white; text-decoration: none; }
-        .brand span { color: var(--amz-orange); }
-        .sec { display: none; padding: 15px; }
-        .active-sec { display: block !important; }
-        .card { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px; }
-        .amz-btn { background: linear-gradient(to bottom, #f7dfa5, #f0c14b); border: 1px solid #a88734; border-radius: 3px; padding: 12px; width: 100%; cursor: pointer; font-weight: bold; }
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #888; border-radius: 3px; box-sizing: border-box; }
-        nav.bot-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; border-top: 1px solid #ddd; padding: 10px 0; }
-        .nav-link { text-align: center; font-size: 11px; flex: 1; cursor: pointer; color: #555; }
+        body { font-family: sans-serif; background: #f4f4f4; margin: 0; padding-bottom: 60px; }
+        header { background: #131921; color: white; padding: 15px; display: flex; justify-content: space-between; }
+        .card { background: white; margin: 10px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input, button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; }
+        .btn { background: #febd69; border: 1px solid #a88734; font-weight: bold; cursor: pointer; }
+        .hidden { display: none; }
+        nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 1px solid #ddd; }
+        .nav-link { flex: 1; text-align: center; padding: 10px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div id="auth-gate">
-    <div class="card" style="margin: 50px auto; max-width: 300px; text-align: center;">
-        <h1 class="brand" style="color:#111;">SRP<span>.in</span></h1>
-        <button class="amz-btn" onclick="login()">Login with Google</button>
-    </div>
-</div>
-
-<div id="app-main" class="hidden">
+<div id="app" class="hidden">
     <header>
-        <div class="brand" onclick="checkAdmin()">SRP<span>.in</span></div>
-        <div id="wall-display" style="color:var(--amz-orange); font-weight:bold;">₹0</div>
+        <b onclick="checkAdmin()">SRP.in</b>
+        <span id="bal">₹0</span>
     </header>
 
-    <section id="home-sec" class="sec active-sec">
-        <div id="product-feed" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"></div>
-    </section>
+    <div id="home" class="sec card">
+        <h3>Products</h3>
+        <div id="list" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;"></div>
+    </div>
 
-    <section id="admin-sec" class="sec">
-        <div class="card">
-            <h3>Add Product</h3>
-            <input id="p-name" placeholder="Product Name">
-            <input id="p-price" type="number" placeholder="Price">
-            <input type="file" id="p-file" accept="image/*">
-            <div id="up-status" style="font-size:12px; color:blue; margin-bottom:10px; font-weight:bold;">Status: Ready</div>
-            <button class="amz-btn" id="p-btn" onclick="secureUpload()">Upload & Save Product</button>
-        </div>
-        <div class="card">
-            <h3>Admin PIN</h3>
-            <input type="password" id="new-pin" placeholder="Set New PIN">
-            <button class="amz-btn" style="background:#eee;" onclick="db.ref('store/admin_pin').set(document.getElementById('new-pin').value); alert('PIN Saved!');">Update PIN</button>
-        </div>
-    </section>
+    <div id="admin" class="sec card hidden">
+        <h3>Admin Panel</h3>
+        <input id="n" placeholder="Product Name">
+        <input id="p" type="number" placeholder="Price">
+        <input type="file" id="f">
+        <div id="st" style="color: blue; font-weight: bold; margin: 5px 0;">Status: Waiting</div>
+        <button class="btn" id="upBtn" onclick="upload()">Upload & Save</button>
+        <hr>
+        <h4>Change PIN</h4>
+        <input type="password" id="newPin" placeholder="New PIN">
+        <button onclick="savePin()">Update PIN</button>
+    </div>
 
-    <nav class="bot-nav">
-        <div class="nav-link" onclick="nav('home')">🏠<br>Home</div>
-        <div class="nav-link" onclick="nav('admin')">⚙️<br>Admin</div>
+    <nav>
+        <div class="nav-link" onclick="sh('home')">Home</div>
+        <div class="nav-link" onclick="sh('admin')">Admin</div>
     </nav>
+</div>
+
+<div id="login" style="text-align:center; margin-top:100px;">
+    <h2>SRP.in</h2>
+    <button class="btn" style="width:200px;" onclick="googleLogin()">Login with Google</button>
 </div>
 
 <script>
@@ -72,92 +62,75 @@ const firebaseConfig = {
     authDomain: "srp-sketch.firebaseapp.com",
     databaseURL: "https://srp-sketch-default-rtdb.firebaseio.com",
     projectId: "srp-sketch",
-    storageBucket: "srp-sketch.appspot.com",
-    messagingSenderId: "1094431391415",
-    appId: "1:1094431391415:web:6ef0bcd2841373e20fd732"
+    storageBucket: "srp-sketch.appspot.com"
 };
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth(), db = firebase.database(), storage = firebase.storage();
+const auth = firebase.auth(), db = firebase.database(), st = firebase.storage();
 
-function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+function googleLogin() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
 
 auth.onAuthStateChanged(user => {
-    if (user) {
-        document.getElementById('auth-gate').classList.add('hidden');
-        document.getElementById('app-main').classList.remove('hidden');
-        loadProducts();
+    if(user) {
+        document.getElementById('login').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        load();
     }
 });
 
-// --- THE FIX: ADDED ERROR REPORTING ---
-async function secureUpload() {
-    const file = document.getElementById('p-file').files[0];
-    const status = document.getElementById('up-status');
-    const btn = document.getElementById('p-btn');
-    
-    if(!file) return alert("Please select an image first!");
+async function upload() {
+    const file = document.getElementById('f').files[0];
+    const status = document.getElementById('st');
+    const btn = document.getElementById('upBtn');
+    if(!file) return alert("Select file!");
 
     btn.disabled = true;
-    status.innerText = "Status: CONTACTING FIREBASE...";
+    status.innerText = "UPLOADING...";
 
     try {
-        const fileRef = storage.ref().child('uploads/' + Date.now() + "_" + file.name);
+        const ref = st.ref().child('items/' + Date.now() + "_" + file.name);
+        const snap = await ref.put(file);
+        const url = await snap.ref.getDownloadURL();
         
-        // This direct upload method is the most compatible with mobile
-        const uploadTask = fileRef.put(file);
+        await db.ref('products').push({
+            name: document.getElementById('n').value,
+            price: document.getElementById('p').value,
+            img: url
+        });
 
-        uploadTask.on('state_changed', 
-            (snapshot) => {
-                let progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                status.innerText = "Status: UPLOADING (" + Math.round(progress) + "%)";
-            }, 
-            (error) => {
-                // THIS WILL TELL US THE TRUTH
-                console.error(error);
-                alert("FIREBASE ERROR: " + error.message + "\n\nTip: Go to Firebase Console -> Storage -> Rules and set them to PUBLIC.");
-                status.innerText = "Status: FAILED";
-                btn.disabled = false;
-            }, 
-            async () => {
-                const url = await uploadTask.snapshot.ref.getDownloadURL();
-                await db.ref('products').push({
-                    name: document.getElementById('p-name').value,
-                    price: document.getElementById('p-price').value,
-                    img: url
-                });
-                status.innerText = "Status: SUCCESS!";
-                alert("Product Added!");
-                location.reload();
-            }
-        );
-    } catch (err) {
-        alert("CRITICAL ERROR: " + err.message);
+        alert("Success!");
+        location.reload();
+    } catch (e) {
+        alert("Error: " + e.message);
         btn.disabled = false;
+        status.innerText = "FAILED";
     }
 }
 
-function checkAdmin() {
-    db.ref('store/admin_pin').once('value', s => {
-        const pin = s.val() || "406";
-        if(prompt("Enter Admin PIN:") === pin) nav('admin');
-        else alert("Wrong PIN");
-    });
-}
-
-function loadProducts() {
+function load() {
     db.ref('products').on('value', s => {
-        const feed = document.getElementById('product-feed');
-        feed.innerHTML = "";
+        const div = document.getElementById('list'); div.innerHTML = "";
         s.forEach(p => {
             const v = p.val();
-            feed.innerHTML += `<div class="card"><img src="${v.img}" style="width:100%"><br><b>${v.name}</b><br>₹${v.price}</div>`;
+            div.innerHTML += `<div class="card" style="margin:0;"><img src="${v.img}" width="100%"><br><b>${v.name}</b><br>₹${v.price}</div>`;
         });
     });
 }
 
-function nav(id) {
-    document.querySelectorAll('.sec').forEach(s => s.classList.remove('active-sec'));
-    document.getElementById(id + '-sec').classList.add('active-sec');
+function savePin() {
+    const p = document.getElementById('newPin').value;
+    if(p) db.ref('store/pin').set(p).then(() => alert("PIN Saved"));
+}
+
+function checkAdmin() {
+    db.ref('store/pin').once('value', s => {
+        const pin = s.val() || "406";
+        if(prompt("Enter PIN:") === pin) sh('admin');
+    });
+}
+
+function sh(id) {
+    document.querySelectorAll('.sec').forEach(s => s.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
 }
 </script>
 </body>
