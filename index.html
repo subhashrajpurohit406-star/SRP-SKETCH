@@ -192,3 +192,145 @@
         auth.signOut();
     }
 </script>
+    <script>
+    // --- NAVIGATION ENGINE ---
+    function showSec(id) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active-sec'));
+        document.getElementById(id + '-sec').classList.add('active-sec');
+        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+        // Find the link that matches the ID and highlight it
+        event.currentTarget.classList.add('active');
+    }
+
+    // --- LIVE STORE ENGINE ---
+    function loadStore() {
+        db.ref('products').on('value', snap => {
+            const container = document.getElementById('product-container');
+            container.innerHTML = "";
+            snap.forEach(child => {
+                const p = child.val();
+                container.innerHTML += `
+                    <div class="p-card">
+                        <img src="${p.img}">
+                        <div class="p-info">
+                            <div class="p-name">${p.name}</div>
+                            <div class="p-price-row">
+                                <span class="p-price">₹${p.price}</span>
+                                <span class="p-mrp">₹${p.mrp}</span>
+                            </div>
+                            <button class="btn-amz-gold" style="margin-top:10px" onclick="openCheckout('${child.key}', '${p.price}', '${p.name}')">Buy Now</button>
+                            <button class="btn-amz-grey" style="margin-top:5px" onclick="addToCart('${p.name}')">Add to Cart</button>
+                        </div>
+                    </div>`;
+            });
+        });
+    }
+
+    // --- CHECKOUT & 5-QUESTION SYSTEM ---
+    let activeOrder = {};
+
+    function openCheckout(id, price, name) {
+        activeOrder = { id, price, name };
+        const overlay = document.createElement('div');
+        overlay.id = "checkout-overlay";
+        overlay.style.display = "block";
+        overlay.innerHTML = `
+            <div style="max-width:400px; margin:auto;">
+                <h2 style="border-bottom:2px solid var(--amz-orange); padding-bottom:10px;">Secure Checkout</h2>
+                <p><b>Product:</b> ${name}</p>
+                <p><b>Total:</b> ₹${price}</p>
+                <div id="checkout-steps">
+                    <label>1. Full Name</label><input type="text" id="c-name" class="auth-input">
+                    <label>2. Mobile Number</label><input type="number" id="c-phone" class="auth-input">
+                    <label>3. Email Address</label><input type="email" id="c-email" class="auth-input">
+                    <label>4. Pincode</label><input type="number" id="c-pin" class="auth-input">
+                    <label>5. Full Delivery Address</label><textarea id="c-addr" class="auth-input" style="height:80px"></textarea>
+                    <button class="btn-amz-gold" onclick="validateAndPay()">Proceed to UPI Payment</button>
+                    <button class="btn-amz-grey" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
+                </div>
+                <div id="upi-step" style="display:none; text-align:center;">
+                    <h3>Pay via UPI</h3>
+                    <p>Scan or Pay to: <b>subhashrajpurohit406@oksbi</b></p>
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=subhashrajpurohit406@oksbi&am=${price}&tn=SRP-Order" style="margin:20px 0;">
+                    <button class="btn-amz-gold" onclick="finalizeOrder()">I Have Paid (Verify Order)</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    }
+
+    function validateAndPay() {
+        const fields = ['c-name', 'c-phone', 'c-email', 'c-pin', 'c-addr'];
+        let valid = true;
+        fields.forEach(f => { if(!document.getElementById(f).value) valid = false; });
+        
+        if(!valid) return alert("Please answer all 5 questions correctly!");
+        
+        document.getElementById('checkout-steps').style.display = 'none';
+        document.getElementById('upi-step').style.display = 'block';
+    }
+
+    function finalizeOrder() {
+        const orderData = {
+            user: auth.currentUser.email,
+            product: activeOrder.name,
+            amount: activeOrder.price,
+            details: {
+                name: document.getElementById('c-name').value,
+                phone: document.getElementById('c-phone').value,
+                address: document.getElementById('c-addr').value
+            },
+            status: "Pending Verification",
+            timestamp: Date.now()
+        };
+        db.ref('orders').push(orderData).then(() => {
+            alert("Order Logged! Admin will verify your payment of ₹" + activeOrder.price);
+            document.getElementById('checkout-overlay').remove();
+        });
+    }
+
+    // --- RISHI AI ENGINE ---
+    function askRishi() {
+        const input = document.getElementById('ai-input').value.toLowerCase();
+        const box = document.getElementById('chat-box');
+        let reply = "I am Rishi, your SRP Assistant. I can help with orders and payments.";
+        
+        if(input.includes("pay")) reply = "You can pay using UPI ID: subhashrajpurohit406@oksbi during checkout.";
+        if(input.includes("wallet")) reply = "Go to the 'Pay' section to add money to your SRP Wallet.";
+        if(input.includes("delivery")) reply = "Standard delivery takes 3-5 business days after payment verification.";
+
+        box.innerHTML += `<div style="margin-bottom:10px;"><b>You:</b> ${input}</div>`;
+        box.innerHTML += `<div style="margin-bottom:15px; color:#c45500;"><b>Rishi:</b> ${reply}</div>`;
+        box.scrollTop = box.scrollHeight;
+        document.getElementById('ai-input').value = "";
+    }
+
+    // --- ADMIN ACCESS (HIDDEN) ---
+    function openAdminMenu() {
+        const pass = prompt("Enter Admin Access Code:");
+        if(pass === "SRP786") {
+            showSec('admin');
+            loadAdminLogs();
+        } else {
+            alert("Unauthorized Access Attempt Logged.");
+        }
+    }
+
+    function loadAdminLogs() {
+        db.ref('orders').on('value', snap => {
+            const logDiv = document.getElementById('admin-order-logs');
+            logDiv.innerHTML = "<h4>Live Order Logs</h4>";
+            snap.forEach(child => {
+                const o = child.val();
+                logDiv.innerHTML += `
+                    <div class="acc-box" style="font-size:12px; margin-bottom:10px; border:1px solid #ccc; padding:10px;">
+                        <b>Order:</b> ${o.product}<br>
+                        <b>User:</b> ${o.user}<br>
+                        <b>Status:</b> ${o.status}<br>
+                        <button onclick="db.ref('orders/${child.key}').update({status:'Verified & Shipping'})">Mark Verified</button>
+                    </div>`;
+            });
+        });
+    }
+</script>
+
