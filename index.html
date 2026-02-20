@@ -20,7 +20,7 @@
         .active-sec { display: block !important; }
         .card { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px; }
         
-        /* Account Switching UI */
+        /* Account Switching */
         .acc-chip { display: flex; align-items: center; background: #fff; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #ddd; }
         .acc-chip img { width: 35px; border-radius: 50%; margin-right: 12px; }
         .switch-btn { margin-left: auto; background: var(--amz-orange); border: 1px solid #a88734; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; }
@@ -65,8 +65,7 @@
     <section id="acc-sec" class="sec">
         <h3>Manage Accounts</h3>
         <div id="manage-acc-list"></div>
-        <p style="font-size:12px; color:#666; margin-top:15px;">Note: Switching accounts will refresh the page to sync your wallet.</p>
-        <button class="amz-btn" style="background:#f0f2f2; margin-top:20px;" onclick="auth.signOut(); localStorage.removeItem('srp_current');">Logout Current</button>
+        <button class="amz-btn" style="background:#f0f2f2; margin-top:20px;" onclick="auth.signOut(); localStorage.removeItem('srp_users'); location.reload();">Clear All & Logout</button>
     </section>
 
     <section id="wallet-sec" class="sec">
@@ -86,29 +85,31 @@
 
         <div id="a-prod" class="admin-sub">
             <div class="card">
-                <input id="p-name" placeholder="Product Name">
-                <input id="p-mrp" type="number" placeholder="MRP Price">
-                <input id="p-disc" type="number" placeholder="Discounted Price">
-                <input id="p-stock" type="number" placeholder="Stock Quantity">
-                <textarea id="p-desc" placeholder="Product Description"></textarea>
-                <input type="file" id="p-file" accept="image/*">
+                <input id="p-name" placeholder="Name">
+                <input id="p-mrp" type="number" placeholder="MRP">
+                <input id="p-disc" type="number" placeholder="Discount Price">
+                <input id="p-stock" type="number" placeholder="Stock">
+                <textarea id="p-desc" placeholder="Description"></textarea>
+                <input type="file" id="p-file" accept="image/*" onchange="hdlUpload()">
+                <div id="up-status" style="font-size:12px; color:blue;"></div>
                 <input type="hidden" id="p-url">
-                <button class="amz-btn" id="p-btn" onclick="hdlUpload()">Step 1: Upload Image</button>
-                <button class="amz-btn" id="p-pub-btn" style="margin-top:10px; display:none;" onclick="saveProduct()">Step 2: Publish Product</button>
+                <button class="amz-btn" id="p-btn" onclick="saveProduct()" disabled>Wait for Upload...</button>
             </div>
         </div>
 
         <div id="a-recv" class="admin-sub hidden">
-            <h4>Orders with Customer Details</h4>
+            <h4>Detailed Orders</h4>
             <div id="admin-recv-list"></div>
         </div>
 
         <div id="a-utr" class="admin-sub hidden"><div id="utr-requests"></div></div>
 
         <div id="a-info" class="admin-sub hidden">
-            <textarea id="in-about" placeholder="Edit About Us..."></textarea>
-            <button class="amz-btn" onclick="updateInfo('about')">Update About Us</button>
-            <textarea id="in-policy" placeholder="Edit Privacy Policy..."></textarea>
+            <input id="admin-email-notify" placeholder="Admin Email for Notifications">
+            <button class="amz-btn" onclick="updateAdminEmail()">Set Notification Email</button>
+            <textarea id="in-about" rows="3" placeholder="About Us"></textarea>
+            <button class="amz-btn" onclick="updateInfo('about')">Update About</button>
+            <textarea id="in-policy" rows="3" placeholder="Policy"></textarea>
             <button class="amz-btn" onclick="updateInfo('policy')">Update Policy</button>
         </div>
     </section>
@@ -122,11 +123,11 @@
 
 <div id="ai-bot" onclick="toggleChat()">🤖</div>
 <div id="chat-win" class="chat-win hidden">
-    <div style="background:var(--amz-navy); color:white; padding:10px; border-radius:10px 10px 0 0;">SRP Pro Smart AI</div>
+    <div style="background:var(--amz-navy); color:white; padding:10px;">SRP Expert AI</div>
     <div id="chat-msgs" style="flex:1; padding:10px; overflow-y:auto; font-size:13px;"></div>
-    <div style="display:flex; border-top:1px solid #eee; padding:5px;">
-        <input id="chat-in" style="flex:1; border:none; outline:none;" placeholder="Ask something...">
-        <button onclick="askAI()" style="background:var(--amz-orange); border:none; padding:5px 10px; border-radius:3px; font-weight:bold;">Go</button>
+    <div style="display:flex; padding:5px; border-top:1px solid #ddd;">
+        <input id="chat-in" style="flex:1; border:none;" placeholder="Ask me anything...">
+        <button onclick="askAI()" style="background:var(--amz-orange); border:none; padding:5px;">Go</button>
     </div>
 </div>
 
@@ -144,39 +145,32 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth(), db = firebase.database(), storage = firebase.storage();
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
-// --- MULTI-ACCOUNT SYSTEM ---
+// --- MULTI ACCOUNT ---
 function syncAccounts() {
     const users = JSON.parse(localStorage.getItem('srp_users') || '[]');
     const list = document.getElementById('account-list');
-    const manageList = document.getElementById('manage-acc-list');
-    list.innerHTML = ""; manageList.innerHTML = "";
-    
+    const mList = document.getElementById('manage-acc-list');
+    list.innerHTML = ""; mList.innerHTML = "";
     users.forEach(u => {
-        const chip = `<div class="acc-chip">
-            <img src="${u.photo}"> 
-            <div><b>${u.name}</b><br><small>${u.email}</small></div>
-            <button class="switch-btn" onclick="switchAcc('${u.email}')">Switch</button>
+        const h = `<div class="acc-chip" onclick="switchAcc('${u.uid}')">
+            <img src="${u.photo}"> <div><b>${u.name}</b><br><small>${u.email}</small></div>
+            <button class="switch-btn">Switch</button>
         </div>`;
-        list.innerHTML += chip; manageList.innerHTML += chip;
+        list.innerHTML += h; mList.innerHTML += h;
     });
 }
 
 async function loginNew() {
     const users = JSON.parse(localStorage.getItem('srp_users') || '[]');
-    if(users.length >= 3) return alert("Limit: 3 Google Accounts reached.");
+    if(users.length >= 3) return alert("Limit 3 Accounts");
     const res = await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
-    const newUser = { email: res.user.email, name: res.user.displayName, photo: res.user.photoURL, uid: res.user.uid };
-    if(!users.find(u => u.email === newUser.email)) users.push(newUser);
+    const n = { email: res.user.email, name: res.user.displayName, photo: res.user.photoURL, uid: res.user.uid };
+    if(!users.find(x => x.email === n.email)) users.push(n);
     localStorage.setItem('srp_users', JSON.stringify(users));
     location.reload();
 }
 
-function switchAcc(email) {
-    alert("Switching to " + email);
-    // Note: Due to Firebase security, user must click 'Add' once per account, 
-    // but this UI helps track and trigger the session switch.
-    auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
-}
+function switchAcc(uid) { location.reload(); }
 
 auth.onAuthStateChanged(user => {
     if (user) {
@@ -186,66 +180,54 @@ auth.onAuthStateChanged(user => {
     } else { syncAccounts(); }
 });
 
-// --- FIXED PRODUCT UPLOAD ---
+// --- UPLOAD LOGIC ---
 async function hdlUpload() {
     const file = document.getElementById('p-file').files[0];
-    if(!file) return alert("Please select an image first!");
+    const status = document.getElementById('up-status');
     const btn = document.getElementById('p-btn');
-    btn.innerText = "UPLOADING TO GALLERY..."; btn.disabled = true;
+    status.innerText = "Uploading to Gallery...";
+    
+    const ref = storage.ref('products/' + Date.now() + "_" + file.name);
+    const uploadTask = ref.put(file);
 
-    try {
-        const ref = storage.ref('products/' + Date.now() + "_" + file.name);
-        const task = ref.put(file);
-        
-        task.on('state_changed', 
-            (snapshot) => { /* Progress can be added here if needed */ },
-            (error) => { alert("Upload Failed! Check Firebase Storage Rules."); btn.disabled = false; btn.innerText = "Retry Upload"; },
-            async () => {
-                const url = await task.snapshot.ref.getDownloadURL();
-                document.getElementById('p-url').value = url;
-                btn.style.display = 'none';
-                document.getElementById('p-pub-btn').style.display = 'block';
-                alert("Image Stored Successfully!");
-            }
-        );
-    } catch(e) { console.error(e); }
+    uploadTask.on('state_changed', null, (err) => alert("Storage Error! Check Firebase Rules"), async () => {
+        const url = await uploadTask.snapshot.ref.getDownloadURL();
+        document.getElementById('p-url').value = url;
+        status.innerText = "Upload Complete! You can now Publish.";
+        btn.disabled = false;
+        btn.innerText = "Publish Product";
+    });
 }
 
 function saveProduct() {
-    const url = document.getElementById('p-url').value;
     db.ref('products').push({
         name: document.getElementById('p-name').value,
         mrp: document.getElementById('p-mrp').value,
         price: document.getElementById('p-disc').value,
         stock: document.getElementById('p-stock').value,
         desc: document.getElementById('p-desc').value,
-        img: url
+        img: document.getElementById('p-url').value
     });
-    alert("Product is now live!");
-    location.reload();
+    alert("Live!"); location.reload();
 }
 
-// --- ORDERS RECEIVED (FULL DETAILS) ---
+// --- ORDERING ---
 function buy(id, price, stock, name) {
-    const ph = prompt("Mobile No:"), pin = prompt("Zipcode:"), addr = prompt("Full Address:");
-    if(!ph || !pin || !addr) return alert("All details are required to deliver!");
-
+    const ph = prompt("Mobile:"), zip = prompt("Zipcode:"), add = prompt("Address:");
+    if(!ph || !zip || !add) return alert("Details required!");
+    
     db.ref('wallets/'+auth.currentUser.uid).once('value', s => {
         const bal = s.val()?.balance || 0;
         if(bal >= price) {
             db.ref('wallets/'+auth.currentUser.uid).update({ balance: bal - price });
             db.ref('products/'+id).update({ stock: stock - 1 });
             db.ref('orders_received').push({
-                cust_name: auth.currentUser.displayName,
-                cust_email: auth.currentUser.email,
-                phone: ph,
-                zip: pin,
-                address: addr,
-                item: name,
-                status: 'Paid'
+                user: auth.currentUser.displayName,
+                email: auth.currentUser.email,
+                item: name, ph, zip, add, status: 'Paid'
             });
-            alert("Order Successful!");
-        } else { alert("Insufficient Balance!"); nav('wallet'); }
+            alert("Order Placed!");
+        } else { alert("Low Balance!"); nav('wallet'); }
     });
 }
 
@@ -254,68 +236,56 @@ function syncAdminOrders() {
         const d = document.getElementById('admin-recv-list'); d.innerHTML = "";
         s.forEach(o => {
             const v = o.val();
-            d.innerHTML += `<div class="card" style="font-size:11px; line-height:1.6;">
-                <b style="color:blue">PRODUCT: ${v.item}</b><br>
-                <b>Customer:</b> ${v.cust_name}<br>
-                <b>Email:</b> ${v.cust_email}<br>
-                <b>Contact:</b> ${v.phone}<br>
-                <b>Address:</b> ${v.address}, PIN: ${v.zip}<br>
-                <span style="color:green; font-weight:bold;">Status: ${v.status}</span>
+            d.innerHTML += `<div class="card" style="font-size:11px;">
+                <b>Product:</b> ${v.item}<br><b>Buyer:</b> ${v.user} (${v.ph})<br>
+                <b>Email:</b> ${v.email}<br><b>Addr:</b> ${v.add}, ${v.zip}
             </div>`;
         });
     });
 }
 
-// --- FULLY TRAINED AI ---
+// --- TRAINED AI ---
 const aiKnowledge = {
-    "hello": "Hello! I am your SRP Pro Smart Assistant. How can I help you today?",
-    "hi": "Hi there! Welcome to the store. Need help with products or wallet?",
-    "how to buy": "1. Add money to your wallet via UPI. 2. Go to Home. 3. Click 'Order Now' and provide your address.",
-    "wallet": "Your wallet allows instant purchases. You can top it up using any UPI app like GPay or PhonePe.",
-    "utr": "A UTR is a 12-digit number found in your payment receipt. Enter it after paying to get balance.",
-    "approval": "Admin checks UTR requests every 10-20 minutes. Please be patient.",
-    "delivery": "We deliver nationwide! Standard shipping takes 3-5 business days.",
-    "contact": "You can reach Subhash Rajpurohit at subhashrajpurohit406@okaxis for support.",
-    "refund": "Refunds are processed to your wallet within 24 hours of cancellation.",
-    "about": "SRP Pro is a premium marketplace for quality products managed by Subhash Rajpurohit."
+    "hello": "Welcome to SRP Pro! I am your trained assistant. How can I help?",
+    "payment": "We accept UPI. Pay to subhashrajpurohit406@okaxis and submit your UTR.",
+    "utr": "UTR is a 12-digit number. Once submitted, admin verifies it and adds money to your wallet.",
+    "delivery": "Fast delivery within 3-5 days across India via premium couriers.",
+    "owner": "This platform is owned by Subhash Rajpurohit.",
+    "how to buy": "Add money to wallet -> Go to Home -> Click Order Now -> Provide Address.",
+    "refund": "Contact admin for any payment issues or refund requests."
 };
 
 function askAI() {
     const q = document.getElementById('chat-in').value.toLowerCase();
     const box = document.getElementById('chat-msgs');
-    box.innerHTML += `<div style="text-align:right; margin-bottom:10px;"><b>You:</b> ${q}</div>`;
-    
-    let res = "I am still learning about that. Please contact support at subhashrajpurohit406@okaxis.";
+    box.innerHTML += `<div><b>You:</b> ${q}</div>`;
+    let res = "I'm still learning about that. Please contact Subhash Sir directly.";
     for(let k in aiKnowledge) { if(q.includes(k)) res = aiKnowledge[k]; }
-    
     setTimeout(() => { 
-        box.innerHTML += `<div style="color:#007185; margin-bottom:10px;"><b>AI:</b> ${res}</div>`; 
+        box.innerHTML += `<div style="color:blue"><b>AI:</b> ${res}</div>`; 
         box.scrollTop = box.scrollHeight;
-    }, 500);
-    document.getElementById('chat-in').value = "";
+    }, 400);
 }
 
-// --- APP INITIALIZATION ---
 function initApp() {
     db.ref('products').on('value', s => {
         const f = document.getElementById('product-feed'); f.innerHTML = "";
         s.forEach(p => {
             const v = p.val();
             f.innerHTML += `<div class="card">
-                <img src="${v.img}" style="width:100%; height:110px; object-fit:contain; border-radius:5px;">
-                <div style="font-size:12px; font-weight:bold; margin-top:5px;">${v.name}</div>
-                <div style="font-size:10px; color:#666; height:30px; overflow:hidden;">${v.desc}</div>
-                <div style="margin-top:5px;"><small><del>₹${v.mrp}</del></small> <b style="color:#B12704">₹${v.price}</b></div>
-                <button class="amz-btn" style="padding:5px; font-size:11px; margin-top:5px;" onclick="buy('${p.key}',${v.price},${v.stock},'${v.name}')">Order Now</button>
+                <img src="${v.img}" style="width:100%; height:110px; object-fit:contain;">
+                <div style="font-weight:bold; font-size:12px;">${v.name}</div>
+                <small><del>₹${v.mrp}</del></small> <b style="color:red">₹${v.price}</b>
+                <button class="amz-btn" style="padding:5px; margin-top:5px;" onclick="buy('${p.key}',${v.price},${v.stock},'${v.name}')">Buy</button>
             </div>`;
         });
     });
     db.ref('store').on('value', s => {
-        const v = s.val() || { about: "Welcome to SRP Store.", policy: "Shop with confidence." };
-        document.getElementById('h-about').innerText = v.about;
-        document.getElementById('h-policy').innerText = v.policy;
-        document.getElementById('in-about').value = v.about;
-        document.getElementById('in-policy').value = v.policy;
+        const v = s.val();
+        document.getElementById('h-about').innerText = v?.about || "";
+        document.getElementById('h-policy').innerText = v?.policy || "";
+        document.getElementById('in-about').value = v?.about || "";
+        document.getElementById('in-policy').value = v?.policy || "";
     });
     db.ref('wallets/'+auth.currentUser.uid).on('value', s => {
         const b = s.val()?.balance || 0;
@@ -328,25 +298,21 @@ function initApp() {
 function nav(id, el) {
     document.querySelectorAll('.sec').forEach(s => s.classList.remove('active-sec'));
     document.getElementById(id + '-sec').classList.add('active-sec');
-    document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-    el.classList.add('active');
 }
 function atab(id, el) {
     document.querySelectorAll('.admin-sub').forEach(s => s.classList.add('hidden'));
     document.getElementById(id).classList.remove('hidden');
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
     if(id === 'a-recv') syncAdminOrders();
 }
 function openTopUp() {
-    const amt = prompt("Amount to add:"); if(!amt) return;
-    const utr = prompt("Enter 12-digit UTR after paying to subhashrajpurohit406@okaxis:");
+    const amt = prompt("Amount:"); if(!amt) return;
+    const utr = prompt("Enter UTR after paying to subhashrajpurohit406@okaxis:");
     if(utr?.length === 12) db.ref('utr_requests/'+utr).set({ uid: auth.currentUser.uid, email: auth.currentUser.email, amt: parseInt(amt), status: 'pending' });
-    alert("UTR Submitted for verification!");
+    alert("UTR Submitted!");
 }
-function updateInfo(t) { db.ref('store/'+t).set(document.getElementById('in-'+t).value); alert("Updated Successfully"); }
+function updateInfo(t) { db.ref('store/'+t).set(document.getElementById('in-'+t).value); alert("Saved!"); }
 function toggleChat() { document.getElementById('chat-win').classList.toggle('hidden'); }
-function checkAdmin() { if(prompt("Enter Admin Pin:")==="406") nav('admin'); }
+function checkAdmin() { if(prompt("Pin:")==="406") nav('admin'); }
 </script>
 </body>
 </html>
